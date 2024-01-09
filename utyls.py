@@ -442,7 +442,7 @@ def input_to_list(input_collection, model="gpt-4-1106-preview", max_tokens=1000)
         print(f'Error processing list: {e}')
 '''
 
-def define_genre_and_create_variables_from_df(input_string, model="gpt-3.5-turbo-1106", max_tokens=1000):
+def define_genre_and_create_variables_from_df(input_string, model="gpt-4-1106-preview", max_tokens=1000):
     logging.info('define_genre function called.')
     try:
         client = OpenAI(
@@ -484,11 +484,7 @@ if __name__ == "__main__":
     data = convert_csv_to_array(input, "data.py")
     requests_filepath = 'data.py'
 
-    # data = data[:10] limit data for testing
-    #requests_filepath = "example_requests_to_chat_completion.jsonl"
-    #requests_output_filepath = "example_requests_to_chat_completion_results.jsonl"
-
-    generate_chat_completion_requests(requests_filepath, data, prompt, model_name="gpt-3.5-turbo-16k")
+    generate_chat_completion_requests(requests_filepath, data, prompt, model_name="gpt-4-1106-preview")
 
     # Process multiple api requests to ChatGPT
     asyncio.run(
