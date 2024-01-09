@@ -258,6 +258,7 @@ class StatusTracker:
 
 
 # A class to make and manage API requests
+@dataclass
 class APIRequest:
     """Stores an API request's inputs, outputs, and other metadata. Contains a method to make an API call."""
     task_id: int    # The ID of the task that the API request is part of
