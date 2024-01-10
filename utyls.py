@@ -1,5 +1,6 @@
 import pandas as pd
 from openai import OpenAI
+import shutil
 import aiohttp  # for making API calls concurrently
 import argparse  # for running script from command line
 import asyncio  # for running API calls concurrently
@@ -55,12 +56,12 @@ def save_generated_data_to_csv(filename):
                 generated_data = response[1]["choices"][0]["message"]["content"]
 
             # List of keywords to replace
-            replace_keywords = ['SEO-Titel', 'SEO-Text', 'Titel', 'Teaser', 'Dachzeile', 'Text', 'Liste']
+            replace_keywords = [' SEOTitel ', ' SEOText ', 'Titel', 'Teaser', 'Dachzeilen', 'Text', 'Liste']
 
             # Check each keyword
             for keyword in replace_keywords:
                 # If the keyword is in the first 30 characters of the title
-                if re.search(keyword, Title[:30], re.I):
+                if re.search(f' {keyword} ', Title[:40], re.I):
                     # Replace the whole string with the keyword and break the loop
                     Title = keyword
                     break
@@ -69,7 +70,7 @@ def save_generated_data_to_csv(filename):
             csv_writer.writerow([Title, generated_data])
 
     print("CSV file created successfully.")
-def generate_chat_completion_requests(filename, data, prompt, model_name="gpt-3.5-turbo"):
+def generate_chat_completion_requests(filename, data, prompt, model_name="gpt-4-1106-preview"):
     # check if 'data' is a list
     if not isinstance(data, list):
         # open the file and read data
@@ -455,7 +456,7 @@ def input_to_list(input_collection, model="gpt-4-1106-preview", max_tokens=1000)
         print(f'Error processing list: {e}')
 '''
 
-def define_genre_and_create_variables_from_df(input_string, model="gpt-4-1106-preview", max_tokens=1000):
+def define_genre_and_create_variables_from_df(input_string, model="gpt-3.5-turbo", max_tokens=1000):
     logging.info('define_genre function called.')
     try:
         client = OpenAI(
@@ -470,7 +471,6 @@ def define_genre_and_create_variables_from_df(input_string, model="gpt-4-1106-pr
     with open('prompt.txt', 'r') as file:
         prompt_txt = file.read()
     prompt = f"{prompt_txt}\n{input_string}"
-    #print(prompt)
     try:
         response = client.chat.completions.create(model=model,
                                                   messages=[{"role": "system", "content": "You are a journalist."},
@@ -478,6 +478,7 @@ def define_genre_and_create_variables_from_df(input_string, model="gpt-4-1106-pr
                                                   max_tokens=max_tokens)
         print(response)
         file_name = response.choices[0].message.content.strip() + '.csv'
+        print(file_name)
         var_name = file_name.split(".")[0]  # removing .csv to get var_name
         logging.info('Processing variable: %s' % var_name)
         print('Processing variable:', var_name)
@@ -490,13 +491,49 @@ def define_genre_and_create_variables_from_df(input_string, model="gpt-4-1106-pr
         print('Failed to create response for variable:', var_name)
 
 
+import os
+import json
+import csv
+
 if __name__ == "__main__":
+    output_files = ['output.jsonl', 'output.csv']
+    history_files = ['history.jsonl', 'history.csv']
+
+    for output_file, history_file in zip(output_files, history_files):
+        if os.path.exists(output_file):
+            if os.path.exists(history_file):
+                # If history file already exists, append the output file content to it
+                with open(output_file, 'r') as out_f, open(history_file, 'r+') as hist_f:
+                    if '.jsonl' in output_file:
+                        output_data = json.load(out_f)
+                        history_data = json.load(hist_f)
+                        history_data.extend(output_data)  # Extend the existing data with the new one
+                        hist_f.seek(0)  # Reset the file cursor to the beginning
+                        json.dump(history_data, hist_f)
+                        hist_f.truncate()  # Remove everything after the current file cursor (i.e., after the newly dumped data)
+                    else:
+                        reader = csv.reader(out_f)
+                        writer = csv.writer(hist_f)
+                        writer.writerows(reader)
+            else:
+                # If history file doesn't exist, rename output file to history file.
+                os.rename(output_file, history_file)
+            # Clear the output file after moving its data to history file.
+            open(output_file, 'w').close()
+            # Print out the contents of the output file to check if it's empty
+            with open(output_file, 'r') as file:
+                contents = file.read()
+                if contents:
+                    print(f'Contents of {output_file}', contents)
+                else:
+                    print(f'{output_file} is empty.')
+
     with open('test.txt', 'r') as file:
         prompt = file.read()
     input = define_genre_and_create_variables_from_df(prompt)
+    print(input)
     data = convert_csv_to_array(input, "data.py")
     requests_filepath = 'data.py'
-
     generate_chat_completion_requests(requests_filepath, data, prompt, model_name="gpt-4-1106-preview")
 
     # Process multiple api requests to ChatGPT
@@ -513,5 +550,4 @@ if __name__ == "__main__":
             logging_level=int(20),
         )
     )
-
     save_generated_data_to_csv('output.jsonl')
