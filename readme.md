@@ -9,6 +9,27 @@ AI-based tool for the generation of news articles based on reports an social med
 
 ANTicle is licensed under the MIT license. For more information check the LICENSE file for details.
 
+## Features
+
+### Working
+
+- recognise text genre
+- generate article text, titel, tagline, tester, SEO Tiel, SEO Teaser
+- history of generated tetexts
+
+### Work in progress
+
+- checking for AI hallucinations
+- promots
+
+### Planned
+
+- Web based frontend
+
+
+Feel free to test the tool using the provided test.txt or by feeding every other text about the weather. More prompts for a varity of genres will be provided soon.
+
+
 ## 🙏 Supported by
 
 - Media Tech Lab [`media-tech-lab`](https://github.com/media-tech-lab)
