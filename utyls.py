@@ -8,12 +8,29 @@ import re  # for matching endpoint from request URL & processing the csv
 import tiktoken  # for counting tokens
 import time  # for sleeping after rate limit is hit
 import csv
+from fuzzywuzzy import fuzz
 from dataclasses import (
     dataclass,
     field,
 )  # for storing API inputs, outputs, and metadata
 
 def convert_csv_to_array(input_csv_path, output_python_path):
+    """
+    :param input_csv_path: Path to the CSV file to be converted.
+    :param output_python_path: Path where the Python file will be saved.
+    :return: The converted data array.
+
+    Converts a CSV file into a Python array. Reads the CSV file and extracts each element to create an array. The array is then saved in a Python file at the specified output path. The function
+    * returns the created data array.
+
+    Example usage:
+
+    ```python
+    input_csv_path = 'data.csv'
+    output_python_path = 'output.py'
+    data = convert_csv_to_array(input_csv_path, output_python_path)
+    ```
+    """
     # get the csv structure
     # put each element into the array
     data = []
@@ -38,36 +55,44 @@ def save_generated_data_to_csv(filename):
     # Create a CSV file for writing
     with open('output.csv', 'w', newline='', encoding='utf-8') as csv_file:
         csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(['Title', 'Generated Output'])
 
-        # Write the header row
-        csv_writer.writerow(['Titel', 'Generated Output'])
-
-        # Iterate through the specialists and write data to the CSV
         for response in responses:
-            # The 'Title' is declared inside the loop, it's local to the for loop
             Title = response[0]["messages"][0]["content"]
-
             try:
                 generated_data = response[1]["choices"][0]["message"]["tool_calls"][0]["function"]["arguments"]
             except:
                 generated_data = response[1]["choices"][0]["message"]["content"]
 
-            # List of keywords to replace
-            replace_keywords = [' SEOTitel ', ' SEOText ', 'Titel', 'Teaser', 'Dachzeilen', 'Text', 'Liste']
+            replace_keywords = ['SEOTitel', 'SEOText', 'Titel', 'Teaser', 'Dachzeilen', 'Text', 'Liste']
 
-            # Check each keyword
             for keyword in replace_keywords:
-                # If the keyword is in the first 30 characters of the title
-                if re.search(f' {keyword} ', Title[:40], re.I):
-                    # Replace the whole string with the keyword and break the loop
+                if keyword in Title:
                     Title = keyword
                     break
 
-            # Write data to the CSV file
             csv_writer.writerow([Title, generated_data])
 
     print("CSV file created successfully.")
 def generate_chat_completion_requests(filename, data, prompt, model_name="gpt-4-1106-preview"):
+    """
+    :param filename: str, the name of the file to write the chat completion requests to
+    :param data: list or str, the input data for the chat completion requests
+    :param prompt: str, the prompt for the user message in each chat completion request
+    :param model_name: str, the name of the model to use for generating chat completions (default is "gpt-4-1106-preview")
+    :return: None
+
+    Generates chat completion requests based on the given data and writes them to the specified file.
+    If 'data' is a list, it will be used as is. Otherwise, it will be treated as a file name and the contents
+    of the file will be read into a list. Each element in the list represents a chat message.
+
+    Each chat completion request consists of a system message followed by a user message. The system message
+    is the current chat message from 'data' and the user message is the given 'prompt'.
+
+    The chat completion request is written to the file in JSONL format, with each request as a separate line.
+    Each JSON object in a line contains the 'model' name and a list of 'messages'. Each message in the list
+    has a 'role' ("system" or "user") and 'content' (the actual message text).
+    """
     # check if 'data' is a list
     if not isinstance(data, list):
         # open the file and read data
@@ -98,7 +123,19 @@ async def process_api_requests_from_file(
     max_attempts: int,
     logging_level: int,
 ):
-    """Processes API requests in parallel, throttling to stay under rate limits."""
+    """
+    :param requests_filepath: The file path of the requests file containing JSON-formatted API requests.
+    :param save_filepath: The file path where the results will be saved.
+    :param request_url: The URL of the API endpoint.
+    :param api_key: The API key for accessing the API.
+    :param max_requests_per_minute: The maximum number of requests allowed per minute.
+    :param max_tokens_per_minute: The maximum number of tokens allowed per minute.
+    :param token_encoding_name: The encoding name used for token consumption.
+    :param max_attempts: The maximum number of attempts to make a request before giving up.
+    :param logging_level: The logging level for the logging messages.
+    :return: None
+
+    """
     # constants
     seconds_to_pause_after_rate_limit_error = 15
     seconds_to_sleep_each_loop = (
@@ -454,6 +491,14 @@ def input_to_list(input_collection, model="gpt-4-1106-preview", max_tokens=1000)
 '''
 
 def define_genre_and_create_variables_from_df(input_string, model="gpt-3.5-turbo", max_tokens=1000):
+    """
+    Defines the genre and creates variables based on the input string.
+
+    :param input_string: The input string to be appended to the prompt.
+    :param model: The model to use for generating completions. Default is 'gpt-3.5-turbo'.
+    :param max_tokens: The maximum number of tokens to generate in the response. Default is 1000.
+    :return: The file name of the generated CSV file.
+    """
     logging.info('define_genre function called.')
     try:
         client = OpenAI(
