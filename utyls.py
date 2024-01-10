@@ -6,7 +6,7 @@ import asyncio  # for running API calls concurrently
 import json  # for saving results to a jsonl file
 import logging  # for logging rate limit warnings and other messages
 import os  # for reading API key
-import re  # for matching endpoint from request URL
+import re  # for matching endpoint from request URL & processing the csv
 import tiktoken  # for counting tokens
 import time  # for sleeping after rate limit is hit
 import csv
@@ -42,18 +42,31 @@ def save_generated_data_to_csv(filename):
         csv_writer = csv.writer(csv_file)
 
         # Write the header row
-        csv_writer.writerow(['Original Data', 'Generated Bio'])
+        csv_writer.writerow(['Titel', 'Generated Output'])
 
         # Iterate through the specialists and write data to the CSV
         for response in responses:
-            original_data = response[0]["messages"][1]["content"]
+            # The 'Title' is declared inside the loop, it's local to the for loop
+            Title = response[0]["messages"][0]["content"]
+
             try:
-              generated_bio = response[1]["choices"][0]["message"]["tool_calls"][0]["function"]["arguments"]
+                generated_data = response[1]["choices"][0]["message"]["tool_calls"][0]["function"]["arguments"]
             except:
-              generated_bio = response[1]["choices"][0]["message"]["content"]
+                generated_data = response[1]["choices"][0]["message"]["content"]
+
+            # List of keywords to replace
+            replace_keywords = ['SEO-Titel', 'SEO-Text', 'Titel', 'Teaser', 'Dachzeile', 'Text', 'Liste']
+
+            # Check each keyword
+            for keyword in replace_keywords:
+                # If the keyword is in the first 30 characters of the title
+                if re.search(keyword, Title[:30], re.I):
+                    # Replace the whole string with the keyword and break the loop
+                    Title = keyword
+                    break
 
             # Write data to the CSV file
-            csv_writer.writerow([original_data, generated_bio])
+            csv_writer.writerow([Title, generated_data])
 
     print("CSV file created successfully.")
 def generate_chat_completion_requests(filename, data, prompt, model_name="gpt-3.5-turbo"):
