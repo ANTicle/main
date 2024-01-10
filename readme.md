@@ -27,9 +27,6 @@ ANTicle is licensed under the MIT license. For more information check the LICENS
 - Web based frontend
 
 
-Feel free to test the tool using the provided test.txt or by feeding every other text about the weather. More prompts for a varity of genres will be provided soon.
-
-
 ## 🙏 Supported by
 
 - Media Tech Lab [`media-tech-lab`](https://github.com/media-tech-lab)
@@ -37,3 +34,6 @@ Feel free to test the tool using the provided test.txt or by feeding every other
 <a href="https://www.media-lab.de/en/programs/media-tech-lab">
     <img src="https://raw.githubusercontent.com/media-tech-lab/.github/main/assets/mtl-powered-by.png" width="240" title="Media Tech Lab powered by logo">
 </a>
+
+Feel free to test the tool using the provided test.txt or by feeding every other text about the weather. More prompts for a varity of genres will be provided soon.
+
