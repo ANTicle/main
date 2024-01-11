@@ -67,7 +67,7 @@ def save_generated_data_to_csv(filename):
             replace_keywords = ['SEOTitel', 'SEOText', 'Titel', 'Teaser', 'Dachzeilen', 'Text', 'Liste']
 
             for keyword in replace_keywords:
-                if keyword in Title:
+                if fuzz.ratio(keyword, Title) >= 93:  # check if the similarity ratio is above or equals 90%
                     Title = keyword
                     break
 
@@ -511,6 +511,14 @@ def facts_to_list(input_string, list_name):
     list_name = compile_chat_request(full_prompt)
     return list_name
 
+def compare_lists(list1, list2):
+    list_prompt = '''Agiere als Journalist. 
+    Du bekommst im Folgenden zwei Listen mit Fakten zu einem Thema. Lies sie und überprüfe, ob sich Fakten in den Listen widersprechen. Überprüfe besonders, ob Zahlen übereinstimmen. Wenn sich Fakten wiedersprechen ist das ein Problem. 
+    Achte außerdem darauf das die zweite Liste, keine Fakten enthält, welche so nicht in der ersten Liste vorhanden sind. Wenn du in der zweiten Liste keine Fakten findest, welche nicht in der ersten enthalten sind ist das ein Problem.
+    Wenn ein Problem vorhanden ist, antworte nur mit dem Wort "Problem". Wenn kein Problem vorhanden ist, antworte mit "weiter".
+    ''' + '\n' + '\n' + "Erste Liste" + '\n' + list1 + '\n' + '\n' + "Zweite Liste" + '\n' + list2
+    compare = compile_chat_request(list_prompt)
+    return compare
 
 
 
