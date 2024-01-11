@@ -287,10 +287,6 @@ async def process_api_requests_from_file(
                 f"{status_tracker.num_rate_limit_errors} rate limit errors received. Consider running at a lower rate."
             )
 
-
-# dataclasses
-
-
 # A class to keep track of the statuses of different tasks
 class StatusTracker:
     """Stores metadata about the script's progress. Only one instance is created."""
@@ -466,40 +462,14 @@ def task_id_generator_function():
         yield task_id
         task_id += 1
 
-'''
-def input_to_list(input_collection, model="gpt-4-1106-preview", max_tokens=1000):
+def compile_chat_request(content, model="gpt-3.5-turbo", max_tokens=1000):
     """
-    Transforms the input to a list using OpenAI's chat model.
-    :param input_collection: The input text collection.
-    :param model: The OpenAI model to use.
-    :param max_tokens: The maximum number of tokens for the response.
+    Function to compile a chat request
+    :param input_string: The input string from the user
+    :param model: The model to be utilized. Default is "gpt-3.5-turbo"
+    :param max_tokens: Maximum tokens for the response. Default is 1000
+    :return: The response from the chat completion
     """
-    logging.info('Transforming input to list')
-    list_prompt = "Read the following input and create a list of all the facts contained within it. "
-    full_prompt = list_prompt + input_collection
-    requests = [APIRequest(full_prompt, model, max_tokens)]
-
-    try:
-        api_key = os.environ.get("OPENAI_API_KEY")
-        responses = asyncio.run(process_requests(requests, api_key))
-        for response in responses:
-            print(f"Response for variable: {response['choices'][0]['message']['content']}")
-            logging.info(f"Received response: {response['choices'][0]['message']['content']}")
-    except Exception as e:
-        logging.error(f'Error processing list: {e}')
-        print(f'Error processing list: {e}')
-'''
-
-def define_genre_and_create_variables_from_df(input_string, model="gpt-3.5-turbo", max_tokens=1000):
-    """
-    Defines the genre and creates variables based on the input string.
-
-    :param input_string: The input string to be appended to the prompt.
-    :param model: The model to use for generating completions. Default is 'gpt-3.5-turbo'.
-    :param max_tokens: The maximum number of tokens to generate in the response. Default is 1000.
-    :return: The file name of the generated CSV file.
-    """
-    logging.info('define_genre function called.')
     try:
         client = OpenAI(
             api_key=os.environ.get('OPENAI_API_KEY'),
@@ -510,14 +480,53 @@ def define_genre_and_create_variables_from_df(input_string, model="gpt-3.5-turbo
         logging.error('Failed to initialize OpenAI client: %s' % e)
         print('Failed to initialize OpenAI client:', e)
         return
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a journalist."
+            },
+            {
+                "role": "user",
+                "content": content
+            }
+        ],
+        max_tokens=max_tokens
+    )
+
+    return response
+
+def facts_to_list(input_string, list_name):
+    """
+    Transform the input string into a list.
+
+    :param input_string: The input string containing facts.
+    :param list_name: The name of the list to create.
+    :return: The created list.
+    """
+    logging.info('Transforming input to list')
+    list_prompt = "Read the following input and create a list of all the facts contained within it. "
+    full_prompt = list_prompt + input_string
+    list_name = compile_chat_request(full_prompt)
+    return list_name
+
+
+
+
+def define_genre_and_create_variables_from_df(input_string):
+    """
+    Defines the genre and creates variables from the given input DataFrame.
+
+    :param input_string: The input string to be used as input to the GPT-3 model.
+    :return: The name of the prompt file to use.
+    """
+    logging.info('define_genre function called.')
     with open('prompt.txt', 'r') as file:
         prompt_txt = file.read()
     prompt = f"{prompt_txt}\n{input_string}"
     try:
-        response = client.chat.completions.create(model=model,
-                                                  messages=[{"role": "system", "content": "You are a journalist."},
-                                                            {"role": "user", "content": prompt}],
-                                                  max_tokens=max_tokens)
+        response = compile_chat_request(prompt)
         print(response)
         file_name = response.choices[0].message.content.strip() + '.csv'
         print(file_name)
