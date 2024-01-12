@@ -9,6 +9,7 @@ import tiktoken  # for counting tokens
 import time  # for sleeping after rate limit is hit
 import csv
 from fuzzywuzzy import fuzz
+import pandas as pd
 from dataclasses import (
     dataclass,
     field,
@@ -51,7 +52,7 @@ def save_generated_data_to_csv(filename):
         for line in file:
             data = json.loads(line)
             responses.append(data)
-
+    rows = []
     # Create a CSV file for writing
     with open('output.csv', 'w', newline='', encoding='utf-8') as csv_file:
         csv_writer = csv.writer(csv_file)
@@ -67,13 +68,31 @@ def save_generated_data_to_csv(filename):
             replace_keywords = ['SEOTitel', 'SEOText', 'Titel', 'Teaser', 'Dachzeilen', 'Text', 'Liste']
 
             for keyword in replace_keywords:
-                if fuzz.ratio(keyword, Title) >= 93:  # check if the similarity ratio is above or equals 90%
+                if any(fuzz.ratio(keyword, word) >= 93 for word in
+                       Title.split(' ')):  # check if any word in the title is similar to current keyword
                     Title = keyword
                     break
 
-            csv_writer.writerow([Title, generated_data])
+            row = [Title, generated_data]
+            csv_writer.writerow(row)
+            rows.append(row)
 
     print("CSV file created successfully.")
+    # Create a pandas dataframe for further analysis
+    df = pd.DataFrame(rows, columns=['Title', 'Generated Output'])
+    print(df)
+    return df
+
+def get_text_value(df):
+    # Check if the title "Text" exists in the DataFrame
+    if 'Text' in df['Title'].values:
+        # Extract the Generated Output corresponding to the Title "Text"
+        output = df.loc[df['Title'] == 'Text', 'Generated Output'].values[0]
+        return str(output)
+    else:
+        print("Title 'Text' not found in the DataFrame.")
+        return None
+
 def generate_chat_completion_requests(filename, data, prompt, model_name="gpt-4-1106-preview"):
     """
     :param filename: str, the name of the file to write the chat completion requests to
@@ -376,10 +395,6 @@ class APIRequest:
             status_tracker.num_tasks_succeeded += 1
             logging.debug(f"Request {self.task_id} saved to {save_filepath}")
 
-
-# functions
-
-
 def api_endpoint_from_url(request_url):
     """Extract the API endpoint from the request URL."""
     match = re.search("^https://[^/]+/v\\d+/(.+)$", request_url)
@@ -462,7 +477,7 @@ def task_id_generator_function():
         yield task_id
         task_id += 1
 
-def compile_chat_request(content, model="gpt-3.5-turbo", max_tokens=1000):
+def compile_chat_request(content, model="gpt-4-1106-preview", max_tokens=1000):
     """
     Function to compile a chat request
     :param input_string: The input string from the user
@@ -506,19 +521,22 @@ def facts_to_list(input_string, list_name):
     :return: The created list.
     """
     logging.info('Transforming input to list')
-    list_prompt = "Read the following input and create a list of all the facts contained within it. "
+    list_prompt = "Lies den folgenden input und erstelle eine sehr detailierte, vollständige Liste aller enthaltenen Fakten. Liste die Fakten mit Spiegelstrichen auf."
     full_prompt = list_prompt + input_string
     list_name = compile_chat_request(full_prompt)
-    return list_name
+    list_name_choice = list_name.choices[0].message.content.strip()  # Retrieve the first Choice object
+    print(list_name_choice)
+    return list_name_choice
 
-def compare_lists(list1, list2):
-    list_prompt = '''Agiere als Journalist. 
-    Du bekommst im Folgenden zwei Listen mit Fakten zu einem Thema. Lies sie und überprüfe, ob sich Fakten in den Listen widersprechen. Überprüfe besonders, ob Zahlen übereinstimmen. Wenn sich Fakten wiedersprechen ist das ein Problem. 
-    Achte außerdem darauf das die zweite Liste, keine Fakten enthält, welche so nicht in der ersten Liste vorhanden sind. Wenn du in der zweiten Liste keine Fakten findest, welche nicht in der ersten enthalten sind ist das ein Problem.
-    Wenn ein Problem vorhanden ist, antworte nur mit dem Wort "Problem". Wenn kein Problem vorhanden ist, antworte mit "weiter".
-    ''' + '\n' + '\n' + "Erste Liste" + '\n' + list1 + '\n' + '\n' + "Zweite Liste" + '\n' + list2
+def compare_facts(input, output):
+    list_prompt = '''Agiere als Journalist. Du bekommst im Folgenden zwei Informationsquellen zu einem Thema. Lies sie und überprüfe, ob sich Fakten in den Texten widersprechen. Überprüfe besonders, ob Zahlen übereinstimmen. Wenn sich Fakten wiedersprechen ist das ein Problem. 
+    Achte außerdem darauf das der zweite text, keine Fakten enthält, welche so nicht auch in dem ersten Text vorhanden sind. Wenn du in dem zweiten Text Fakten findest, welche nicht in dem ersten enthalten sind ist das ein Problem.
+    Der zweite Text darf weniger details einhalten als der erste. Das ist kein Problem. 
+    Wenn ein signifikantes Problem vorhanden ist, antworte mit dem Wort "Problem:" gefolgt von einer Beschreibung des Problems. Wenn kein Problem vorhanden ist, sondern nur fehelende Details antworte mit "Fehlende Details:" gefolgt von einer Liste der fehlenden Details.''' + '\n' + '\n' + "Erster Text" + '\n' + str(input) + '\n' + '\n' + "Zweiter Text" + '\n' + str(output)
     compare = compile_chat_request(list_prompt)
-    return compare
+    choice = compare.choices[0].message.content.strip()  # Retrieve the first Choice object
+
+    return choice
 
 
 

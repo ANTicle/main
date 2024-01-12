@@ -1,7 +1,7 @@
 import json
 import os
 import csv
-from utyls import define_genre_and_create_variables_from_df, convert_csv_to_array, generate_chat_completion_requests, process_api_requests_from_file, save_generated_data_to_csv
+from utyls import define_genre_and_create_variables_from_df, convert_csv_to_array, generate_chat_completion_requests, process_api_requests_from_file, save_generated_data_to_csv, compare_facts, facts_to_list, get_text_value
 import asyncio
 
 if __name__ == "__main__":
@@ -38,25 +38,48 @@ if __name__ == "__main__":
                     print(f'{output_file} is empty.')
 
     with open('test.txt', 'r') as file:
-        prompt = file.read()
-    input = define_genre_and_create_variables_from_df(prompt)
+        input_collection = file.read()
+    input = define_genre_and_create_variables_from_df(input_collection)
     print(input)
     data = convert_csv_to_array(input, "data.py")
     requests_filepath = 'data.py'
-    generate_chat_completion_requests(requests_filepath, data, prompt, model_name="gpt-4-1106-preview")
+    generate_chat_completion_requests(requests_filepath, data, input_collection, model_name="gpt-4-1106-preview")
 
-    # Process multiple api requests to ChatGPT
-    asyncio.run(
-        process_api_requests_from_file(
-            requests_filepath=requests_filepath,
-            save_filepath='output.jsonl',
-            request_url="https://api.openai.com/v1/chat/completions",
-            api_key=os.getenv("OPENAI_API_KEY"),
-            max_requests_per_minute=float(90000),
-            max_tokens_per_minute=float(170000),
-            token_encoding_name="cl100k_base",
-            max_attempts=int(5),
-            logging_level=int(20),
+    first_loop = True
+    while True:
+        if not first_loop:
+            # Clear the output files after the first loop
+            open('output.csv', 'w').close()
+            open('output.jsonl', 'w').close()
+        first_loop = False
+
+        # Process multiple api requests to ChatGPT
+        asyncio.run(
+            process_api_requests_from_file(
+                requests_filepath=requests_filepath,
+                save_filepath='output.jsonl',
+                request_url="https://api.openai.com/v1/chat/completions",
+                api_key=os.getenv("OPENAI_API_KEY"),
+                max_requests_per_minute=float(90000),
+                max_tokens_per_minute=float(170000),
+                token_encoding_name="cl100k_base",
+                max_attempts=int(5),
+                logging_level=int(20),
+            )
         )
-    )
-    save_generated_data_to_csv('output.jsonl')
+        df = save_generated_data_to_csv('output.jsonl')
+        output_text = get_text_value(df)
+        hallucination_check = compare_facts(input_collection, output_text)
+        print(hallucination_check)
+
+        if "Problem" in hallucination_check:
+            # Restart asyncio.run
+            continue
+
+        elif "Fehlende Details" in hallucination_check:
+            with open('output.txt', 'w') as file:
+                file.write(hallucination_check)
+            break
+        else:
+            # Rerun hallucination_check
+            pass
