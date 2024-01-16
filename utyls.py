@@ -8,6 +8,7 @@ import re  # for matching endpoint from request URL & processing the csv
 import tiktoken  # for counting tokens
 import time  # for sleeping after rate limit is hit
 import csv
+import datetime
 from fuzzywuzzy import fuzz
 import pandas as pd
 from dataclasses import (
@@ -17,20 +18,19 @@ from dataclasses import (
 
 def convert_csv_to_array(input_csv_path, output_python_path):
     """
-    :param input_csv_path: Path to the CSV file to be converted.
-    :param output_python_path: Path where the Python file will be saved.
-    :return: The converted data array.
+    :param input_csv_path: The path to the input CSV file.
+    :param output_python_path: The path to the output Python file.
+    :return: The data array.
 
-    Converts a CSV file into a Python array. Reads the CSV file and extracts each element to create an array. The array is then saved in a Python file at the specified output path. The function
-    * returns the created data array.
+    Converts the data in the input CSV file into a Python array and writes it to the output Python file. Each row of the CSV file is treated as an element of the array.
 
     Example usage:
 
-    ```python
-    input_csv_path = 'data.csv'
-    output_python_path = 'output.py'
-    data = convert_csv_to_array(input_csv_path, output_python_path)
-    ```
+        input_csv_path = 'input.csv'
+        output_python_path = 'output.py'
+        data = convert_csv_to_array(input_csv_path, output_python_path)
+
+    This will read the data from 'input.csv', convert it to an array, and write it to 'output.py'. The resulting array will be stored in the 'data' variable.
     """
     # get the csv structure
     # put each element into the array
@@ -44,6 +44,11 @@ def convert_csv_to_array(input_csv_path, output_python_path):
         data_file.write(f'data = {data}')
     return data
 def save_generated_data_to_csv(filename):
+    """
+    :param filename: The name of the input file that contains the data to be saved into the CSV file.
+    :return: A pandas dataframe containing the saved data.
+
+    """
     # takes the data as input
     # Write it into the CSV file
     responses = []
@@ -84,6 +89,12 @@ def save_generated_data_to_csv(filename):
     return df
 
 def get_text_value(df):
+    """
+    Check if the title "Text" exists in the DataFrame.
+
+    :param df: A pandas DataFrame containing the data.
+    :return: The extracted text value corresponding to the title "Text" if found, otherwise None.
+    """
     # Check if the title "Text" exists in the DataFrame
     if 'Text' in df['Title'].values:
         # Extract the Generated Output corresponding to the Title "Text"
@@ -131,6 +142,7 @@ def generate_chat_completion_requests(filename, data, prompt, model_name="gpt-4-
             json_string = json.dumps({"model": model_name, "messages": messages})
             f.write(json_string + "\n")
 
+
 async def process_api_requests_from_file(
     requests_filepath: str,
     save_filepath: str,
@@ -143,17 +155,17 @@ async def process_api_requests_from_file(
     logging_level: int,
 ):
     """
-    :param requests_filepath: The file path of the requests file containing JSON-formatted API requests.
-    :param save_filepath: The file path where the results will be saved.
-    :param request_url: The URL of the API endpoint.
-    :param api_key: The API key for accessing the API.
-    :param max_requests_per_minute: The maximum number of requests allowed per minute.
+    :param requests_filepath: The file path to the list of API requests to process.
+    :param save_filepath: The file path to save the results of the API requests.
+    :param request_url: The URL of the API endpoint to call.
+    :param api_key: The API key used for authorization.
+    :param max_requests_per_minute: The maximum number of API requests allowed per minute.
     :param max_tokens_per_minute: The maximum number of tokens allowed per minute.
-    :param token_encoding_name: The encoding name used for token consumption.
-    :param max_attempts: The maximum number of attempts to make a request before giving up.
-    :param logging_level: The logging level for the logging messages.
-    :return: None
+    :param token_encoding_name: The name of the encoding used for tokens.
+    :param max_attempts: The maximum number of attempts for each API request.
+    :param logging_level: The logging level for the debug information.
 
+    :return: None
     """
     # constants
     seconds_to_pause_after_rate_limit_error = 15
@@ -171,7 +183,6 @@ async def process_api_requests_from_file(
     # use api-key header for Azure deployments
     if '/deployments' in request_url:
         request_header = {"api-key": f"{api_key}"}
-
     # initialize trackers
     queue_of_requests_to_retry = asyncio.Queue()
     task_id_generator = (
@@ -181,16 +192,13 @@ async def process_api_requests_from_file(
         StatusTracker()
     )  # single instance to track a collection of variables
     next_request = None  # variable to hold the next request to call
-
     # initialize available capacity counts
     available_request_capacity = max_requests_per_minute
     available_token_capacity = max_tokens_per_minute
     last_update_time = time.time()
-
     # initialize flags
     file_not_finished = True  # after file is empty, we'll skip reading it
     logging.debug(f"Initialization complete.")
-
     # initialize file reading
     with open(requests_filepath) as file:
         # `requests` will provide requests one at a time
@@ -394,6 +402,51 @@ class APIRequest:
             status_tracker.num_tasks_in_progress -= 1
             status_tracker.num_tasks_succeeded += 1
             logging.debug(f"Request {self.task_id} saved to {save_filepath}")
+            # capture total_tokens and store it in CSV
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            try:
+                total_tokens = response.usage.total_tokens  # assuming 'response' is defined
+            except AttributeError:
+                print(f"Failed to get total_tokens from response.usage.total_tokens: {response}")
+                try:
+                    total_tokens = response.usage.total_tokens  # assuming 'response' is defined
+                except AttributeError:
+                    print(f"Failed to get total_tokens from response.usage.total_tokens: {response}")
+                    try:
+                        total_tokens = response.get('usage', {}).get('total_tokens')
+                    except AttributeError:
+                        print(f"Failed to get total_tokens from response: {response}")
+                        return
+
+            filename = 'tokens_log.csv'
+            history_filename = 'token_count_history.csv'
+            headers = ['time', 'tokens']
+
+            if os.path.isfile(filename):
+                with open(filename, 'r') as file:
+                    last_line = file.readlines()[-1]
+
+                last_timestamp = datetime.datetime.strptime(last_line.split(",")[0], "%Y-%m-%d %H:%M:%S")
+
+                # If last timestamp is not from today, move the existing file contents to the history file
+                if last_timestamp.date() != datetime.date.today():
+
+                    if os.path.isfile(history_filename):  # If the history file exists, append contents
+                        with open(history_filename, 'a') as history_file:
+                            with open(filename, 'r') as f:
+                                history_file.write(f.read())
+                    else:  # If the history file does not exist, rename the current file
+                        os.rename(filename, history_filename)
+
+                    # Create a new 'tokens_log.csv' and write headers
+                    with open(filename, 'w', newline='') as tokens_log:
+                        writer = csv.writer(tokens_log)
+                        writer.writerow(headers)
+
+            # Write the token usage to the current file
+            with open(filename, 'a', newline='') as tokens_log:
+                writer = csv.writer(tokens_log)
+                writer.writerow([timestamp, total_tokens])
 
 def api_endpoint_from_url(request_url):
     """Extract the API endpoint from the request URL."""
@@ -481,7 +534,7 @@ def compile_chat_request(content, model="gpt-4-1106-preview", max_tokens=1000):
     """
     Function to compile a chat request
     :param input_string: The input string from the user
-    :param model: The model to be utilized. Default is "gpt-3.5-turbo"
+    :param model: The model to be utilized. Default is "gpt-4-1106-preview"
     :param max_tokens: Maximum tokens for the response. Default is 1000
     :return: The response from the chat completion
     """
@@ -510,6 +563,46 @@ def compile_chat_request(content, model="gpt-4-1106-preview", max_tokens=1000):
         max_tokens=max_tokens
     )
 
+    # capture total_tokens and store it in CSV
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        total_tokens = response.usage.total_tokens  # assuming 'response' is defined
+        print(f"Got response: {response}")
+    except AttributeError:
+        total_tokens = response.get('usage', {}).get('total_tokens')
+        print(f"Failed to get total_tokens from response: {response}")  # assuming 'response' is defined
+        return
+
+    filename = 'tokens_log.csv'
+    history_filename = 'token_count_history.csv'
+    headers = ['time', 'tokens']
+
+    if os.path.isfile(filename):
+        with open(filename, 'r') as file:
+            last_line = file.readlines()[-1]
+
+        last_timestamp = datetime.datetime.strptime(last_line.split(",")[0], "%Y-%m-%d %H:%M:%S")
+
+        # If last timestamp is not from today, move the existing file contents to the history file
+        if last_timestamp.date() != datetime.date.today():
+
+            if os.path.isfile(history_filename):  # If the history file exists, append contents
+                with open(history_filename, 'a') as history_file:
+                    with open(filename, 'r') as f:
+                        history_file.write(f.read())
+            else:  # If the history file does not exist, rename the current file
+                os.rename(filename, history_filename)
+
+            # Create a new 'tokens_log.csv' and write headers
+            with open(filename, 'w', newline='') as tokens_log:
+                writer = csv.writer(tokens_log)
+                writer.writerow(headers)
+
+    # Write the token usage to the current file
+    with open(filename, 'a', newline='') as tokens_log:
+        writer = csv.writer(tokens_log)
+        writer.writerow([timestamp, total_tokens])
+
     return response
 
 def facts_to_list(input_string, list_name):
@@ -529,6 +622,15 @@ def facts_to_list(input_string, list_name):
     return list_name_choice
 
 def compare_facts(input, output):
+    """
+    :param input: The first text containing facts to be compared
+    :param output: The second text containing facts to be compared
+    :return: The user's choice after comparing the facts
+
+    This method takes in two texts, `input` and `output`, and compares the facts in these texts. The user is prompted to choose whether there are conflicting facts or missing details between
+    * the texts. The method returns the user's choice as a string. The method makes use of the `compile_chat_request` function to display the texts to the user and retrieve their choice
+    *.
+    """
     list_prompt = '''Agiere als Journalist. Du bekommst im Folgenden zwei Informationsquellen zu einem Thema. Lies sie und überprüfe, ob sich Fakten in den Texten widersprechen. Überprüfe besonders, ob Zahlen übereinstimmen. Wenn sich Fakten wiedersprechen ist das ein Problem. 
     Achte außerdem darauf das der zweite text, keine Fakten enthält, welche so nicht auch in dem ersten Text vorhanden sind. Wenn du in dem zweiten Text Fakten findest, welche nicht in dem ersten enthalten sind ist das ein Problem.
     Der zweite Text darf weniger details einhalten als der erste. Das ist kein Problem. 
@@ -537,8 +639,6 @@ def compare_facts(input, output):
     choice = compare.choices[0].message.content.strip()  # Retrieve the first Choice object
 
     return choice
-
-
 
 def define_genre_and_create_variables_from_df(input_string):
     """
