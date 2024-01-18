@@ -15,11 +15,12 @@ ANTicle is licensed under the MIT license. For more information check the LICENS
 
 - recognise text genre
 - generate article text, titel, tagline, tester, SEO Tiel, SEO Teaser
-- history of generated tetexts
+- history of generated texts & amount of tokens used
+- checking for AI hallucinations
 
 ### Work in progress
 
-- checking for AI hallucinations
+- adding variables to the prompt
 - promots
 
 ### Planned
