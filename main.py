@@ -3,10 +3,25 @@ import os
 import csv
 from utyls import define_genre_and_create_variables_from_df, convert_csv_to_array, generate_chat_completion_requests, process_api_requests_from_file, save_generated_data_to_csv, compare_facts, facts_to_list, get_text_value
 import asyncio
+import pandas as pd
 
 if __name__ == "__main__":
     output_files = ['output.jsonl', 'output.csv']
     history_files = ['history.jsonl', 'history.csv']
+    # Check if the file exists
+    if os.path.exists('tokens_log.csv'):
+        # Use pandas to read the CSV file
+        df = pd.read_csv('tokens_log.csv')
+        # Calculate the sum of the tokens column
+        token_sum = df['tokens'].sum()
+        print(token_sum)
+        # Check if the sum is within 5% of 50000
+        if abs(token_sum - 500000) / 500000 <= 0.05:
+            os.environ['OPENAI_API_KEY'] = os.environ.get('OPENAI_API_KEY_2', os.getenv('OPENAI_API_KEY'))
+        elif os.environ['OPENAI_API_KEY'] == os.environ.get('OPENAI_API_KEY_2', ''):
+            os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY_3')
+        elif os.environ['OPENAI_API_KEY'] == os.environ.get('OPENAI_API_KEY_3', ''):
+            os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_API_KEY')
 
     for output_file, history_file in zip(output_files, history_files):
         if os.path.exists(output_file):
