@@ -3,6 +3,9 @@ A little tool that carrys a massive weight
 
 
 AI-based tool for the generation of news articles based on reports an social media posts
+Feed the tool with informations and let it generate everything you need to publish it as a news article.
+Currently in development with a working backend. Feel free to dowenload and try! 
+A easy to use forenend is in the making.
 
 
 ## 📘 License
