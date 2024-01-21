@@ -17,7 +17,8 @@ ANTicle is licensed under the MIT license. For more information check the LICENS
 - generate article text, titel, tagline, tester, SEO Tiel, SEO Teaser
 - history of generated texts & amount of tokens used
 - checking for AI hallucinations
-
+- adaptive openAI API key update to avoid hitting errors
+  
 ### Work in progress
 
 - adding variables to the prompt
