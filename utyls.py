@@ -43,47 +43,60 @@ def convert_csv_to_array(input_csv_path, output_python_path):
     with open(output_python_path, "w") as data_file:
         data_file.write(f'data = {data}')
     return data
+
+
+REPLACE_KEYWORDS = ['SEOTitel', 'SEOText', 'Titel', 'Teaser', 'Dachzeilen', 'Text', 'Liste']
+
+
 def save_generated_data_to_csv(filename):
-    """
-    :param filename: The name of the input file that contains the data to be saved into the CSV file.
-    :return: A pandas dataframe containing the saved data.
+    responses = get_responses_from_file(filename)
+    data_rows = write_responses_to_csv(responses)
+    df = create_dataframe(data_rows)
+    return df
 
-    """
-    # takes the data as input
-    # Write it into the CSV file
+
+def get_responses_from_file(filename):
     responses = []
-
     with open(filename, 'r', encoding='utf-8') as file:
         for line in file:
             data = json.loads(line)
             responses.append(data)
+    return responses
+
+
+def write_responses_to_csv(responses):
     rows = []
-    # Create a CSV file for writing
     with open('output.csv', 'w', newline='', encoding='utf-8') as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(['Title', 'Generated Output'])
 
         for response in responses:
-            Title = response[0]["messages"][0]["content"]
-            try:
-                generated_data = response[1]["choices"][0]["message"]["tool_calls"][0]["function"]["arguments"]
-            except:
-                generated_data = response[1]["choices"][0]["message"]["content"]
-
-            replace_keywords = ['SEOTitel', 'SEOText', 'Titel', 'Teaser', 'Dachzeilen', 'Text', 'Liste']
-
-            for keyword in replace_keywords:
-                if any(fuzz.ratio(keyword, word) >= 93 for word in
-                       Title.split(' ')):  # check if any word in the title is similar to current keyword
-                    Title = keyword
-                    break
-
-            row = [Title, generated_data]
+            title, generated_data = extract_data_from_response(response)
+            row = [title, generated_data]
             csv_writer.writerow(row)
             rows.append(row)
-
     print("CSV file created successfully.")
-    # Create a pandas dataframe for further analysis
+    return rows
+
+
+def extract_data_from_response(response):
+    title = response[0]["messages"][0]["content"]
+    generated_data = extract_generated_data(response)
+    for keyword in REPLACE_KEYWORDS:
+        if any(fuzz.ratio(keyword, word) >= 93 for word in title.split(' ')):
+            title = keyword
+            break
+    return title, generated_data
+
+
+def extract_generated_data(response):
+    try:
+        return response[1]["choices"][0]["message"]["tool_calls"][0]["function"]["arguments"]
+    except KeyError:
+        return response[1]["choices"][0]["message"]["content"]
+
+
+def create_dataframe(rows):
     df = pd.DataFrame(rows, columns=['Title', 'Generated Output'])
     print(df)
     return df
