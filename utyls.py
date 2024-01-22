@@ -11,6 +11,7 @@ import csv
 import datetime
 from fuzzywuzzy import fuzz
 import pandas as pd
+from typing import Callable
 from dataclasses import (
     dataclass,
     field,
@@ -49,6 +50,12 @@ REPLACE_KEYWORDS = ['SEOTitel', 'SEOText', 'Titel', 'Teaser', 'Dachzeilen', 'Tex
 
 
 def save_generated_data_to_csv(filename):
+    """
+    Saves generated data to a CSV file.
+
+    :param filename: The name of the CSV file to save the data to.
+    :return: The dataframe containing the saved data.
+    """
     responses = get_responses_from_file(filename)
     data_rows = write_responses_to_csv(responses)
     df = create_dataframe(data_rows)
@@ -56,6 +63,12 @@ def save_generated_data_to_csv(filename):
 
 
 def get_responses_from_file(filename):
+    """
+    Read responses from a file.
+
+    :param filename: The name of the file to read from.
+    :return: A list of response data read from the file.
+    """
     responses = []
     with open(filename, 'r', encoding='utf-8') as file:
         for line in file:
@@ -65,6 +78,14 @@ def get_responses_from_file(filename):
 
 
 def write_responses_to_csv(responses):
+    """
+    Write responses to a CSV file.
+
+    :param responses: a list of responses to write to the CSV file
+    :type responses: list
+    :return: a list of rows written to the CSV file
+    :rtype: list
+    """
     rows = []
     with open('output.csv', 'w', newline='', encoding='utf-8') as csv_file:
         csv_writer = csv.writer(csv_file)
@@ -80,6 +101,12 @@ def write_responses_to_csv(responses):
 
 
 def extract_data_from_response(response):
+    """
+    Extracts data from the given response.
+
+    :param response: The response containing the data.
+    :return: A tuple containing the extracted title and generated data.
+    """
     title = response[0]["messages"][0]["content"]
     generated_data = extract_generated_data(response)
     for keyword in REPLACE_KEYWORDS:
@@ -90,6 +117,14 @@ def extract_data_from_response(response):
 
 
 def extract_generated_data(response):
+    """
+    Extracts generated data from a given response.
+
+    :param response: The response containing the generated data.
+    :type response: dict
+    :return: The extracted generated data.
+    :rtype: dict or str
+    """
     try:
         return response[1]["choices"][0]["message"]["tool_calls"][0]["function"]["arguments"]
     except KeyError:
@@ -97,6 +132,13 @@ def extract_generated_data(response):
 
 
 def create_dataframe(rows):
+    """
+    Create a pandas DataFrame from a given list of rows.
+
+    :param rows: A list of rows to be used as data for the DataFrame.
+    :return: The created pandas DataFrame.
+
+    """
     df = pd.DataFrame(rows, columns=['Title', 'Generated Output'])
     print(df)
     return df
@@ -117,38 +159,33 @@ def get_text_value(df):
         print("Title 'Text' not found in the DataFrame.")
         return None
 
+def load_data_from_file(filename):
+    """
+    :param filename: str, the name of the file to read data from
+    :return: list, the content read from the file
+    Opens the file and reads the content into a list.
+    """
+    file = os.path.join(os.getcwd(), filename)
+    if os.path.isfile(file):
+        with open(file, 'r') as f:
+            data = f.readlines()  # depending on your file format, adjust this line
+        return data
+    return None
+
 def generate_chat_completion_requests(filename, data, prompt, model_name="gpt-4-1106-preview"):
     """
-    :param filename: str, the name of the file to write the chat completion requests to
-    :param data: list or str, the input data for the chat completion requests
-    :param prompt: str, the prompt for the user message in each chat completion request
-    :param model_name: str, the name of the model to use for generating chat completions (default is "gpt-4-1106-preview")
-    :return: None
-
-    Generates chat completion requests based on the given data and writes them to the specified file.
-    If 'data' is a list, it will be used as is. Otherwise, it will be treated as a file name and the contents
-    of the file will be read into a list. Each element in the list represents a chat message.
-
-    Each chat completion request consists of a system message followed by a user message. The system message
-    is the current chat message from 'data' and the user message is the given 'prompt'.
-
-    The chat completion request is written to the file in JSONL format, with each request as a separate line.
-    Each JSON object in a line contains the 'model' name and a list of 'messages'. Each message in the list
-    has a 'role' ("system" or "user") and 'content' (the actual message text).
+    The description is the same as the existing function.
     """
-    # check if 'data' is a list
+    # Check if 'data' is a list and read from file if necessary
     if not isinstance(data, list):
-        # open the file and read data
-        file = os.path.join(os.getcwd(), filename)
-        if os.path.isfile(file):
-            with open(file, 'r') as f:
-                data = f.readlines()  # depending on your file format, adjust this line
-    # 'data' is a list or the file is read successfully into a list
+       data = load_data_from_file(filename)
+
+    # Write chat completions to file
     with open(filename, "w") as f:
-        for x in data:
+        for chat_message in data:
             # Create a list of messages for each request
             messages = [
-                {"role": "system", "content": str(x)},
+                {"role": "system", "content": str(chat_message)},
                 {"role": "user", "content":  prompt}
             ]
             # Write the messages to the JSONL file
@@ -168,16 +205,15 @@ async def process_api_requests_from_file(
     logging_level: int,
 ):
     """
-    :param requests_filepath: The file path to the list of API requests to process.
-    :param save_filepath: The file path to save the results of the API requests.
-    :param request_url: The URL of the API endpoint to call.
-    :param api_key: The API key used for authorization.
-    :param max_requests_per_minute: The maximum number of API requests allowed per minute.
+    :param requests_filepath: The path to the file containing the API requests to process.
+    :param save_filepath: The path to save the results of the API requests.
+    :param request_url: The URL of the API endpoint to make the requests.
+    :param api_key: The API key or authorization token to include in the request header.
+    :param max_requests_per_minute: The maximum number of requests allowed per minute.
     :param max_tokens_per_minute: The maximum number of tokens allowed per minute.
     :param token_encoding_name: The name of the encoding used for tokens.
-    :param max_attempts: The maximum number of attempts for each API request.
-    :param logging_level: The logging level for the debug information.
-
+    :param max_attempts: The maximum number of attempts to retry a failed request.
+    :param logging_level: The level of logging to output.
     :return: None
     """
     # constants
@@ -471,69 +507,114 @@ def api_endpoint_from_url(request_url):
 
 
 def append_to_jsonl(data, filename: str) -> None:
-    """Append a json payload to the end of a jsonl file."""
+    """
+    Append a JSON string to a JSON Lines file.
+
+    :param data: The data to be appended as a JSON string.
+    :param filename: The filename of the JSON Lines file.
+    :return: None
+    """
     json_string = json.dumps(data)
     with open(filename, "a") as f:
         f.write(json_string + "\n")
 
 
-def num_tokens_consumed_from_request(
-    request_json: dict,
-    api_endpoint: str,
-    token_encoding_name: str,
-):
-    """Count the number of tokens in the request. Only supports completion and embedding requests."""
+def compute_chat_tokens(request_json, encoding, completion_tokens):
+    """
+    Calculate the number of tokens in a chat.
+
+    :param request_json: The JSON object containing the chat messages.
+    :type request_json: dict
+    :param encoding: The encoding used for tokenization.
+    :type encoding: str
+    :param completion_tokens: The number of completion tokens.
+    :type completion_tokens: int
+    :return: The total number of tokens in the chat plus completion tokens.
+    :rtype: int
+    """
+    num_tokens = 0
+    for message in request_json["messages"]:
+        num_tokens += 4
+        for key, value in message.items():
+            num_tokens += len(encoding.encode(value))
+            if key == "name":
+                num_tokens -= 1
+    num_tokens += 2
+    return num_tokens + completion_tokens
+
+def compute_prompt_tokens(request_json, encoding, completion_tokens):
+    """Computes the total number of tokens in the prompt.
+
+    :param request_json: The JSON object containing the completion request.
+    :type request_json: dict
+    :param encoding: The encoding to be used.
+    :type encoding: str
+    :param completion_tokens: The number of completion tokens.
+    :type completion_tokens: int
+    :return: The total number of tokens in the prompt.
+    :rtype: int
+    :raises TypeError: If the "prompt" field in the completion request is not a string or a list of strings.
+    """
+    prompt = request_json["prompt"]
+    if isinstance(prompt, str):  # single prompt
+        prompt_tokens = len(encoding.encode(prompt))
+        num_tokens = prompt_tokens + completion_tokens
+        return num_tokens
+    elif isinstance(prompt, list):
+        prompt_tokens = sum([len(encoding.encode(p)) for p in prompt])
+        num_tokens = prompt_tokens + completion_tokens * len(prompt)
+        return num_tokens
+    else:
+        raise TypeError(
+            'Expecting either string or list of strings for "prompt" field in completion request'
+        )
+
+def compute_embedding_tokens(request_json, encoding):
+    """
+    Compute the number of tokens in the input or inputs in the request JSON using the given encoding.
+
+    :param request_json: A JSON object that contains the input or inputs.
+    :type request_json: dict
+    :param encoding: The encoding used to encode the input or inputs.
+    :type encoding: Encoding
+    :return: The number of tokens in the input or inputs.
+    :rtype: int
+    :raises TypeError: If the "input" field in the request JSON is not a string or a list of strings.
+    """
+    input = request_json["input"]
+    if isinstance(input, str):
+        num_tokens = len(encoding.encode(input))
+        return num_tokens
+    elif isinstance(input, list):  # multiple inputs
+        num_tokens = sum([len(encoding.encode(i)) for i in input])
+        return num_tokens
+    else:
+        raise TypeError(
+            'Expecting either string or list of strings for "inputs" field in embedding request'
+        )
+
+def num_tokens_consumed_from_request(request_json: dict, api_endpoint: str, token_encoding_name: str):
+    """
+    :param request_json: A dictionary containing the JSON request data.
+    :param api_endpoint: A string representing the API endpoint.
+    :param token_encoding_name: A string representing the name of the token encoding.
+
+    :return: An integer representing the number of tokens consumed from the request.
+
+    """
     encoding = tiktoken.get_encoding(token_encoding_name)
-    # if completions request, tokens = prompt + n * max_tokens
     if api_endpoint.endswith("completions"):
         max_tokens = request_json.get("max_tokens", 15)
         n = request_json.get("n", 1)
         completion_tokens = n * max_tokens
-
-        # chat completions
         if api_endpoint.startswith("chat/"):
-            num_tokens = 0
-            for message in request_json["messages"]:
-                num_tokens += 4  # every message follows <im_start>{role/name}\n{content}<im_end>\n
-                for key, value in message.items():
-                    num_tokens += len(encoding.encode(value))
-                    if key == "name":  # if there's a name, the role is omitted
-                        num_tokens -= 1  # role is always required and always 1 token
-            num_tokens += 2  # every reply is primed with <im_start>assistant
-            return num_tokens + completion_tokens
-        # normal completions
+            return compute_chat_tokens(request_json, encoding, completion_tokens)
         else:
-            prompt = request_json["prompt"]
-            if isinstance(prompt, str):  # single prompt
-                prompt_tokens = len(encoding.encode(prompt))
-                num_tokens = prompt_tokens + completion_tokens
-                return num_tokens
-            elif isinstance(prompt, list):  # multiple prompts
-                prompt_tokens = sum([len(encoding.encode(p)) for p in prompt])
-                num_tokens = prompt_tokens + completion_tokens * len(prompt)
-                return num_tokens
-            else:
-                raise TypeError(
-                    'Expecting either string or list of strings for "prompt" field in completion request'
-                )
-    # if embeddings request, tokens = input tokens
+            return compute_prompt_tokens(request_json, encoding, completion_tokens)
     elif api_endpoint == "embeddings":
-        input = request_json["input"]
-        if isinstance(input, str):  # single input
-            num_tokens = len(encoding.encode(input))
-            return num_tokens
-        elif isinstance(input, list):  # multiple inputs
-            num_tokens = sum([len(encoding.encode(i)) for i in input])
-            return num_tokens
-        else:
-            raise TypeError(
-                'Expecting either string or list of strings for "inputs" field in embedding request'
-            )
-    # more logic needed to support other API calls (e.g., edits, inserts, DALL-E)
+        return compute_embedding_tokens(request_json, encoding)
     else:
-        raise NotImplementedError(
-            f'API endpoint "{api_endpoint}" not implemented in this script'
-        )
+        raise NotImplementedError(f'API endpoint "{api_endpoint}" not implemented in this script')
 
 
 def task_id_generator_function():
@@ -545,11 +626,13 @@ def task_id_generator_function():
 
 def compile_chat_request(content, model="gpt-4-1106-preview", max_tokens=1000):
     """
-    Function to compile a chat request
-    :param input_string: The input string from the user
-    :param model: The model to be utilized. Default is "gpt-4-1106-preview"
-    :param max_tokens: Maximum tokens for the response. Default is 1000
-    :return: The response from the chat completion
+    :param content: The content of the user's message for the chat completion.
+    :param model: The model to use for the chat completion. Default is "gpt-4-1106-preview".
+    :param max_tokens: The maximum number of tokens to generate in the chat completion. Default is 1000.
+    :return: The response from the chat completions API.
+
+    This method compiles a chat request using the OpenAI client. It initializes the OpenAI client with the provided API key, and then makes a request to the chat completions API using the
+    * specified model, user message content, and maximum tokens.
     """
     try:
         client = OpenAI(
@@ -561,6 +644,7 @@ def compile_chat_request(content, model="gpt-4-1106-preview", max_tokens=1000):
         logging.error('Failed to initialize OpenAI client: %s' % e)
         print('Failed to initialize OpenAI client:', e)
         return
+
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -576,47 +660,44 @@ def compile_chat_request(content, model="gpt-4-1106-preview", max_tokens=1000):
         max_tokens=max_tokens
     )
 
-    # capture total_tokens and store it in CSV
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     try:
-        total_tokens = response.usage.total_tokens  # assuming 'response' is defined
-        print(f"Got response: {response}")
+        total_tokens = response.usage.total_tokens
     except AttributeError:
         total_tokens = response.get('usage', {}).get('total_tokens')
-        print(f"Failed to get total_tokens from response: {response}")  # assuming 'response' is defined
-        return
 
+    record_token_usage(total_tokens)
+    return response
+
+
+def record_token_usage(total_tokens):
+    """
+    Record the usage of tokens in a CSV file.
+
+    :param total_tokens: The total number of tokens used.
+    :return: None
+    """
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     filename = 'tokens_log.csv'
     history_filename = 'token_count_history.csv'
     headers = ['time', 'tokens']
-
     if os.path.isfile(filename):
         with open(filename, 'r') as file:
             last_line = file.readlines()[-1]
-
         last_timestamp = datetime.datetime.strptime(last_line.split(",")[0], "%Y-%m-%d %H:%M:%S")
-
-        # If last timestamp is not from today, move the existing file contents to the history file
         if last_timestamp.date() != datetime.date.today():
-
-            if os.path.isfile(history_filename):  # If the history file exists, append contents
+            if os.path.isfile(history_filename):
                 with open(history_filename, 'a') as history_file:
                     with open(filename, 'r') as f:
                         history_file.write(f.read())
-            else:  # If the history file does not exist, rename the current file
+            else:
                 os.rename(filename, history_filename)
 
-            # Create a new 'tokens_log.csv' and write headers
             with open(filename, 'w', newline='') as tokens_log:
                 writer = csv.writer(tokens_log)
                 writer.writerow(headers)
-
-    # Write the token usage to the current file
     with open(filename, 'a', newline='') as tokens_log:
         writer = csv.writer(tokens_log)
         writer.writerow([timestamp, total_tokens])
-
-    return response
 
 def facts_to_list(input_string, list_name):
     """
@@ -653,29 +734,45 @@ def compare_facts(input, output):
 
     return choice
 
-def define_genre_and_create_variables_from_df(input_string):
+
+def define_genre_and_create_variables_from_df(
+        input_string: str,
+        compile_request_func: Callable[[str], str] = compile_chat_request
+) -> str:
     """
     Defines the genre and creates variables from the given input DataFrame.
 
-    :param input_string: The input string to be used as input to the GPT-3 model.
+    :param input_string: The input string to be used as input to compile request function.
+    :param compile_request_func: Function to compile a chat request.
     :return: The name of the prompt file to use.
     """
-    logging.info('define_genre function called.')
+    logging.info('define_genre function started.')
+
+    prompt = _get_prompt_with_input_string(input_string)
+
+    try:
+        response = compile_request_func(prompt)
+        logging.info('Processing variable: %s' % response.choices[0].message.content.strip())
+        return _get_response_file_name(response)
+    except FileNotFoundError:
+        logging.error('File %s not found.' % _get_response_file_name(response))
+    except Exception as e:
+        logging.error('Failed to create response for variable. Error: %s' % e)
+
+
+def _get_prompt_with_input_string(input_string: str) -> str:
+    """
+    :param input_string: String representing the input to be appended to the prompt.
+    :return: A string representing the prompt with the input string appended.
+    """
     with open('prompt.txt', 'r') as file:
         prompt_txt = file.read()
-    prompt = f"{prompt_txt}\n{input_string}"
-    try:
-        response = compile_chat_request(prompt)
-        print(response)
-        file_name = response.choices[0].message.content.strip() + '.csv'
-        print(file_name)
-        var_name = file_name.split(".")[0]  # removing .csv to get var_name
-        logging.info('Processing variable: %s' % var_name)
-        print('Processing variable:', var_name)
-        return file_name
-    except FileNotFoundError:
-        logging.error('File %s was not found.' % file_name)
-        print('FileNotFoundError:', file_name)
-    except Exception as e:
-        logging.error('Failed to create response for variable: %s. Error: %s' % (var_name, e))
-        print('Failed to create response for variable:', var_name)
+    return f"{prompt_txt}\n{input_string}"
+
+
+def _get_response_file_name(response) -> str:
+    """
+    :param response: The response object that contains the choices and message content.
+    :return: The file name for the response, with '.csv' appended.
+    """
+    return response.choices[0].message.content.strip() + '.csv'
