@@ -174,7 +174,19 @@ def load_data_from_file(filename):
 
 def generate_chat_completion_requests(filename, data, prompt, model_name="gpt-4-1106-preview"):
     """
-    The description is the same as the existing function.
+    :param filename: The name of the file to write the chat completions to.
+    :param data: A list of chat messages.
+    :param prompt: The prompt for generating chat completions.
+    :param model_name: The name of the model to use for generating chat completions. Defaults to "gpt-4-1106-preview".
+    :return: None
+
+    This method generates chat completion requests and writes them to a file. It takes in the filename to write the completions to, the data which is a list of chat messages, the prompt
+    * for generating completions, and an optional model_name parameter which specifies the model to use.
+
+    If the 'data' parameter is not a list, it will be assumed to be a filename and the data will be loaded from the file.
+
+    Each chat completion request consists of two messages - a system message representing the previous chat message and a user message containing the prompt. These messages are then written
+    * to the file in JSONL format.
     """
     # Check if 'data' is a list and read from file if necessary
     if not isinstance(data, list):
