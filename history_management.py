@@ -1,5 +1,6 @@
 import json
 import csv
+import os
 def append_output_to_history(output_file, history_file):
     """
     Append output from 'output_file' to 'history_file'.
@@ -20,3 +21,7 @@ def append_output_to_history(output_file, history_file):
             reader = csv.reader(out_f)
             writer = csv.writer(hist_f)
             writer.writerows(reader)
+
+        # Empty the output file by removing it and recreating it as an empty file
+        os.remove(output_file)
+        open(output_file, 'w').close()
