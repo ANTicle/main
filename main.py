@@ -4,9 +4,10 @@ import csv
 import asyncio
 import pandas as pd
 from utyls import (define_genre_and_create_variables_from_df, convert_csv_to_array, generate_chat_completion_requests,
-                   process_api_requests_from_file, save_generated_data_to_csv, compare_facts, get_text_value,
-                   validate_and_swap_api_key, append_output_to_history, rename_and_clear_output_file,
-                   print_file_contents)
+                   process_api_requests_from_file, save_generated_data_to_csv, compare_facts, get_text_value)
+from token_management import validate_and_swap_api_key
+from output_management import rename_and_clear_output_file
+from history_management import append_output_to_history
 
 if __name__ == "__main__":
     output_files = ['output.jsonl', 'output.csv']
@@ -14,7 +15,6 @@ if __name__ == "__main__":
     if os.path.exists('tokens_log.csv'):
         df = pd.read_csv('tokens_log.csv')
         token_sum = df['tokens'].sum()
-        print(token_sum)
         validate_and_swap_api_key(token_sum)
 
     for output_file, history_file in zip(output_files, history_files):
@@ -22,9 +22,8 @@ if __name__ == "__main__":
             append_output_to_history(output_file, history_file)
         else:
             rename_and_clear_output_file(output_file, history_file)
-        print_file_contents(output_file)
 
-    with open('test.txt', 'r') as file:
+    with open('test.txt', 'r') as file: #replace when frontend deliveres input
         input_collection = file.read()
     input = define_genre_and_create_variables_from_df(input_collection)
     print('input: ' + input + ' stop input')
