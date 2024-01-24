@@ -3,46 +3,10 @@ import json
 import csv
 import asyncio
 import pandas as pd
-from utyls import define_genre_and_create_variables_from_df, convert_csv_to_array, generate_chat_completion_requests, process_api_requests_from_file, save_generated_data_to_csv, compare_facts, get_text_value
-
-def validate_and_swap_api_key(token_sum):
-    max_api_usage = 500000
-    api_key = os.getenv('OPENAI_API_KEY')  # default value
-    usage_ratio = abs(token_sum - max_api_usage) / max_api_usage
-    if usage_ratio <= 0.05:
-        api_key = os.environ.get('OPENAI_API_KEY_2', os.getenv('OPENAI_API_KEY'))
-    elif os.environ['OPENAI_API_KEY'] == os.environ.get('OPENAI_API_KEY_2', ''):
-        api_key = os.getenv('OPENAI_API_KEY_3')
-    elif os.environ['OPENAI_API_KEY'] == os.environ.get('OPENAI_API_KEY_3', ''):
-        api_key = os.getenv('OPENAI_API_KEY')
-    os.environ['OPENAI_API_KEY'] = api_key
-
-def append_output_to_history(output_file, history_file):
-    with open(output_file, 'r') as out_f, open(history_file, 'r+') as hist_f:
-        if '.jsonl' in output_file:
-            output_data = [json.loads(line) for line in out_f]
-            history_data = [json.loads(line) for line in hist_f]
-            history_data.extend(output_data)
-            hist_f.seek(0)
-            json.dump(history_data, hist_f)
-            hist_f.truncate()
-        else:
-            reader = csv.reader(out_f)
-            writer = csv.writer(hist_f)
-            writer.writerows(reader)
-
-def rename_and_clear_output_file(output_file, history_file):
-    if os.path.exists(output_file):
-        os.rename(output_file, history_file)
-        open(output_file, 'w').close()
-
-def print_file_contents(output_file):
-    with open(output_file, 'r') as file:
-        contents = file.read()
-        if contents:
-            print(f'Contents of {output_file}', contents)
-        else:
-            print(f'{output_file} is empty.')
+from utyls import (define_genre_and_create_variables_from_df, convert_csv_to_array, generate_chat_completion_requests,
+                   process_api_requests_from_file, save_generated_data_to_csv, compare_facts, get_text_value,
+                   validate_and_swap_api_key, append_output_to_history, rename_and_clear_output_file,
+                   print_file_contents)
 
 if __name__ == "__main__":
     output_files = ['output.jsonl', 'output.csv']
@@ -63,8 +27,8 @@ if __name__ == "__main__":
     with open('test.txt', 'r') as file:
         input_collection = file.read()
     input = define_genre_and_create_variables_from_df(input_collection)
-    print(input)
-    data = convert_csv_to_array(input, "data.py")
+    print('input: ' + input + ' stop input')
+    data = convert_csv_to_array(input, 'data.py')
     requests_filepath = 'data.py'
     generate_chat_completion_requests(requests_filepath, data, input_collection, model_name="gpt-4-1106-preview")
     first_loop = True

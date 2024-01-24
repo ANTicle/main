@@ -16,6 +16,7 @@ from dataclasses import (
     dataclass,
     field,
 )  # for storing API inputs, outputs, and metadata
+REPLACE_KEYWORDS = ['SEOTitel', 'SEOText', 'Titel', 'Teaser', 'Dachzeilen', 'Text', 'Liste']
 
 def convert_csv_to_array(input_csv_path, output_python_path):
     """
@@ -45,10 +46,6 @@ def convert_csv_to_array(input_csv_path, output_python_path):
         data_file.write(f'data = {data}')
     return data
 
-
-REPLACE_KEYWORDS = ['SEOTitel', 'SEOText', 'Titel', 'Teaser', 'Dachzeilen', 'Text', 'Liste']
-
-
 def save_generated_data_to_csv(filename):
     """
     Saves generated data to a CSV file.
@@ -60,7 +57,6 @@ def save_generated_data_to_csv(filename):
     data_rows = write_responses_to_csv(responses)
     df = create_dataframe(data_rows)
     return df
-
 
 def get_responses_from_file(filename):
     """
@@ -75,7 +71,6 @@ def get_responses_from_file(filename):
             data = json.loads(line)
             responses.append(data)
     return responses
-
 
 def write_responses_to_csv(responses):
     """
@@ -99,7 +94,6 @@ def write_responses_to_csv(responses):
     print("CSV file created successfully.")
     return rows
 
-
 def extract_data_from_response(response):
     """
     Extracts data from the given response.
@@ -115,7 +109,6 @@ def extract_data_from_response(response):
             break
     return title, generated_data
 
-
 def extract_generated_data(response):
     """
     Extracts generated data from a given response.
@@ -130,7 +123,6 @@ def extract_generated_data(response):
     except KeyError:
         return response[1]["choices"][0]["message"]["content"]
 
-
 def create_dataframe(rows):
     """
     Create a pandas DataFrame from a given list of rows.
@@ -140,7 +132,7 @@ def create_dataframe(rows):
 
     """
     df = pd.DataFrame(rows, columns=['Title', 'Generated Output'])
-    print(df)
+    #print(df)
     return df
 
 def get_text_value(df):
@@ -203,7 +195,6 @@ def generate_chat_completion_requests(filename, data, prompt, model_name="gpt-4-
             # Write the messages to the JSONL file
             json_string = json.dumps({"model": model_name, "messages": messages})
             f.write(json_string + "\n")
-
 
 async def process_api_requests_from_file(
     requests_filepath: str,
@@ -388,7 +379,6 @@ class StatusTracker:
     num_other_errors: int = 0    # Keeps track of the number of other types of errors
     time_of_last_rate_limit_error: int = 0  # Keeps track of the time when the last rate limit error occurred, used to cool off after hitting rate limits
 
-
 # A class to make and manage API requests
 @dataclass
 class APIRequest:
@@ -466,18 +456,11 @@ class APIRequest:
             # capture total_tokens and store it in CSV
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             try:
-                total_tokens = response.usage.total_tokens  # assuming 'response' is defined
+                total_tokens = response.usage.total_tokens
             except AttributeError:
-                print(f"Failed to get total_tokens from response.usage.total_tokens: {response}")
-                try:
-                    total_tokens = response.usage.total_tokens  # assuming 'response' is defined
-                except AttributeError:
-                    print(f"Failed to get total_tokens from response.usage.total_tokens: {response}")
-                    try:
-                        total_tokens = response.get('usage', {}).get('total_tokens')
-                    except AttributeError:
-                        print(f"Failed to get total_tokens from response: {response}")
-                        return
+                total_tokens = response.get('usage', {}).get('total_tokens')
+
+            record_token_usage(total_tokens)
 
             filename = 'tokens_log.csv'
             history_filename = 'token_count_history.csv'
@@ -517,7 +500,6 @@ def api_endpoint_from_url(request_url):
         match = re.search(r"^https://[^/]+/openai/deployments/[^/]+/(.+?)(\?|$)", request_url)
     return match[1]
 
-
 def append_to_jsonl(data, filename: str) -> None:
     """
     Append a JSON string to a JSON Lines file.
@@ -529,7 +511,6 @@ def append_to_jsonl(data, filename: str) -> None:
     json_string = json.dumps(data)
     with open(filename, "a") as f:
         f.write(json_string + "\n")
-
 
 def compute_chat_tokens(request_json, encoding, completion_tokens):
     """
@@ -628,7 +609,6 @@ def num_tokens_consumed_from_request(request_json: dict, api_endpoint: str, toke
     else:
         raise NotImplementedError(f'API endpoint "{api_endpoint}" not implemented in this script')
 
-
 def task_id_generator_function():
     """Generate integers 0, 1, 2, and so on."""
     task_id = 0
@@ -680,14 +660,12 @@ def compile_chat_request(content, model="gpt-4-1106-preview", max_tokens=1000):
     record_token_usage(total_tokens)
     return response
 
+def append_to_log(filename, timestamp, total_tokens):
+    with open(filename, mode='a', newline='') as log_file:
+        log_writer = csv.writer(log_file)
+        log_writer.writerow([timestamp, total_tokens])
 
 def record_token_usage(total_tokens):
-    """
-    Record the usage of tokens in a CSV file.
-
-    :param total_tokens: The total number of tokens used.
-    :return: None
-    """
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     filename = 'tokens_log.csv'
     history_filename = 'token_count_history.csv'
@@ -711,22 +689,6 @@ def record_token_usage(total_tokens):
         writer = csv.writer(tokens_log)
         writer.writerow([timestamp, total_tokens])
 
-def facts_to_list(input_string, list_name):
-    """
-    Transform the input string into a list.
-
-    :param input_string: The input string containing facts.
-    :param list_name: The name of the list to create.
-    :return: The created list.
-    """
-    logging.info('Transforming input to list')
-    list_prompt = "Lies den folgenden input und erstelle eine sehr detailierte, vollständige Liste aller enthaltenen Fakten. Liste die Fakten mit Spiegelstrichen auf."
-    full_prompt = list_prompt + input_string
-    list_name = compile_chat_request(full_prompt)
-    list_name_choice = list_name.choices[0].message.content.strip()  # Retrieve the first Choice object
-    print(list_name_choice)
-    return list_name_choice
-
 def compare_facts(input, output):
     """
     :param input: The first text containing facts to be compared
@@ -745,7 +707,6 @@ def compare_facts(input, output):
     choice = compare.choices[0].message.content.strip()  # Retrieve the first Choice object
 
     return choice
-
 
 def define_genre_and_create_variables_from_df(
         input_string: str,
@@ -771,7 +732,6 @@ def define_genre_and_create_variables_from_df(
     except Exception as e:
         logging.error('Failed to create response for variable. Error: %s' % e)
 
-
 def _get_prompt_with_input_string(input_string: str) -> str:
     """
     :param input_string: String representing the input to be appended to the prompt.
@@ -781,10 +741,82 @@ def _get_prompt_with_input_string(input_string: str) -> str:
         prompt_txt = file.read()
     return f"{prompt_txt}\n{input_string}"
 
-
 def _get_response_file_name(response) -> str:
     """
     :param response: The response object that contains the choices and message content.
     :return: The file name for the response, with '.csv' appended.
     """
     return response.choices[0].message.content.strip() + '.csv'
+
+def validate_and_swap_api_key(token_sum, max_api_usage = 500000):
+    """
+
+    Validate and Swap API Key
+
+    Parameters:
+    :param token_sum: The total number of tokens used in the API call.
+    :param max_api_usage: The maximum number of tokens allowed for API usage. Default value is 500000.
+
+    Returns:
+    :return: None
+
+    """
+    api_key = os.getenv('OPENAI_API_KEY')  # default value
+    usage_ratio = abs(token_sum - max_api_usage) / max_api_usage
+    if usage_ratio <= 0.05:
+        api_key = os.environ.get('OPENAI_API_KEY_2', os.getenv('OPENAI_API_KEY'))
+    elif os.environ['OPENAI_API_KEY'] == os.environ.get('OPENAI_API_KEY_2', ''):
+        api_key = os.getenv('OPENAI_API_KEY_3')
+    elif os.environ['OPENAI_API_KEY'] == os.environ.get('OPENAI_API_KEY_3', ''):
+        api_key = os.getenv('OPENAI_API_KEY')
+    os.environ['OPENAI_API_KEY'] = api_key
+
+def append_output_to_history(output_file, history_file):
+    """
+    Append output from 'output_file' to 'history_file'.
+
+    :param output_file: The path to the file containing the output data.
+    :param history_file: The path to the file where the output data will be appended.
+    :return: None
+    """
+    with open(output_file, 'r') as out_f, open(history_file, 'r+') as hist_f:
+        if '.jsonl' in output_file:
+            output_data = [json.loads(line) for line in out_f]
+            history_data = [json.loads(line) for line in hist_f]
+            history_data.extend(output_data)
+            hist_f.seek(0)
+            json.dump(history_data, hist_f)
+            hist_f.truncate()
+        else:
+            reader = csv.reader(out_f)
+            writer = csv.writer(hist_f)
+            writer.writerows(reader)
+
+def rename_and_clear_output_file(output_file, history_file):
+    """
+    Rename and clear the output file.
+
+    :param output_file: The path to the output file.
+    :type output_file: str
+    :param history_file: The desired name for the renamed output file.
+    :type history_file: str
+    :return: None
+    :rtype: None
+    """
+    if os.path.exists(output_file):
+        os.rename(output_file, history_file)
+        open(output_file, 'w').close()
+
+def print_file_contents(output_file):
+    """
+    Prints the contents of a file.
+
+    :param output_file: The path to the file to be printed.
+    :return: None
+    """
+    with open(output_file, 'r') as file:
+        contents = file.read()
+        if contents:
+            print(f'Contents of {output_file}', contents)
+        else:
+            print(f'{output_file} is empty.')
