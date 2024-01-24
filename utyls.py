@@ -5,18 +5,16 @@ import json  # for saving results to a jsonl file
 import logging  # for logging rate limit warnings and other messages
 import os  # for reading API key
 import re  # for matching endpoint from request URL & processing the csv
-import tiktoken  # for counting tokens
 import time  # for sleeping after rate limit is hit
 import csv
 import datetime
 from fuzzywuzzy import fuzz
 import pandas as pd
-from typing import Callable
 from dataclasses import (
     dataclass,
     field,
 )  # for storing API inputs, outputs, and metadata
-from token_management import record_token_usage, compute_chat_tokens, compute_prompt_tokens
+from token_management import record_token_usage, num_tokens_consumed_from_request
 REPLACE_KEYWORDS = ['SEOTitel', 'SEOText', 'Titel', 'Teaser', 'Dachzeilen', 'Text', 'Liste']
 
 def convert_csv_to_array(input_csv_path, output_python_path):
@@ -47,7 +45,7 @@ def convert_csv_to_array(input_csv_path, output_python_path):
         data_file.write(f'data = {data}')
     return data
 
-def save_generated_data_to_csv(filename):
+def save_generated_data_from_async_req(filename):
     """
     Saves generated data to a CSV file.
 
@@ -135,22 +133,6 @@ def create_dataframe(rows):
     df = pd.DataFrame(rows, columns=['Title', 'Generated Output'])
     #print(df)
     return df
-
-def get_text_value(df):
-    """
-    Check if the title "Text" exists in the DataFrame.
-
-    :param df: A pandas DataFrame containing the data.
-    :return: The extracted text value corresponding to the title "Text" if found, otherwise None.
-    """
-    # Check if the title "Text" exists in the DataFrame
-    if 'Text' in df['Title'].values:
-        # Extract the Generated Output corresponding to the Title "Text"
-        output = df.loc[df['Title'] == 'Text', 'Generated Output'].values[0]
-        return str(output)
-    else:
-        print("Title 'Text' not found in the DataFrame.")
-        return None
 
 def load_data_from_file(filename):
     """
@@ -513,52 +495,6 @@ def append_to_jsonl(data, filename: str) -> None:
     with open(filename, "a") as f:
         f.write(json_string + "\n")
 
-def compute_embedding_tokens(request_json, encoding):
-    """
-    Compute the number of tokens in the input or inputs in the request JSON using the given encoding.
-
-    :param request_json: A JSON object that contains the input or inputs.
-    :type request_json: dict
-    :param encoding: The encoding used to encode the input or inputs.
-    :type encoding: Encoding
-    :return: The number of tokens in the input or inputs.
-    :rtype: int
-    :raises TypeError: If the "input" field in the request JSON is not a string or a list of strings.
-    """
-    input = request_json["input"]
-    if isinstance(input, str):
-        num_tokens = len(encoding.encode(input))
-        return num_tokens
-    elif isinstance(input, list):  # multiple inputs
-        num_tokens = sum([len(encoding.encode(i)) for i in input])
-        return num_tokens
-    else:
-        raise TypeError(
-            'Expecting either string or list of strings for "inputs" field in embedding request'
-        )
-
-def num_tokens_consumed_from_request(request_json: dict, api_endpoint: str, token_encoding_name: str):
-    """
-    :param request_json: A dictionary containing the JSON request data.
-    :param api_endpoint: A string representing the API endpoint.
-    :param token_encoding_name: A string representing the name of the token encoding.
-
-    :return: An integer representing the number of tokens consumed from the request.
-
-    """
-    encoding = tiktoken.get_encoding(token_encoding_name)
-    if api_endpoint.endswith("completions"):
-        max_tokens = request_json.get("max_tokens", 15)
-        n = request_json.get("n", 1)
-        completion_tokens = n * max_tokens
-        if api_endpoint.startswith("chat/"):
-            return compute_chat_tokens(request_json, encoding, completion_tokens)
-        else:
-            return compute_prompt_tokens(request_json, encoding, completion_tokens)
-    elif api_endpoint == "embeddings":
-        return compute_embedding_tokens(request_json, encoding)
-    else:
-        raise NotImplementedError(f'API endpoint "{api_endpoint}" not implemented in this script')
 
 def task_id_generator_function():
     """Generate integers 0, 1, 2, and so on."""
@@ -617,61 +553,5 @@ def append_to_log(filename, timestamp, total_tokens):
         log_writer.writerow([timestamp, total_tokens])
 
 
-def compare_facts(input, output):
-    """
-    :param input: The first text containing facts to be compared
-    :param output: The second text containing facts to be compared
-    :return: The user's choice after comparing the facts
 
-    This method takes in two texts, `input` and `output`, and compares the facts in these texts. The user is prompted to choose whether there are conflicting facts or missing details between
-    * the texts. The method returns the user's choice as a string. The method makes use of the `compile_chat_request` function to display the texts to the user and retrieve their choice
-    *.
-    """
-    list_prompt = '''Agiere als Journalist. Du bekommst im Folgenden zwei Informationsquellen zu einem Thema. Lies sie und überprüfe, ob sich Fakten in den Texten widersprechen. Überprüfe besonders, ob Zahlen übereinstimmen. Wenn sich Fakten wiedersprechen ist das ein Problem. 
-    Achte außerdem darauf das der zweite text, keine Fakten enthält, welche so nicht auch in dem ersten Text vorhanden sind. Wenn du in dem zweiten Text Fakten findest, welche nicht in dem ersten enthalten sind ist das ein Problem.
-    Der zweite Text darf weniger details einhalten als der erste. Das ist kein Problem. 
-    Wenn ein signifikantes Problem vorhanden ist, antworte mit dem Wort "Problem:" gefolgt von einer Beschreibung des Problems. Wenn kein Problem vorhanden ist, sondern nur fehelende Details antworte mit "Fehlende Details:" gefolgt von einer Liste der fehlenden Details.''' + '\n' + '\n' + "Erster Text" + '\n' + str(input) + '\n' + '\n' + "Zweiter Text" + '\n' + str(output)
-    compare = compile_chat_request(list_prompt)
-    choice = compare.choices[0].message.content.strip()  # Retrieve the first Choice object
 
-    return choice
-
-def define_genre_and_create_variables_from_df(
-        input_string: str,
-        compile_request_func: Callable[[str], str] = compile_chat_request
-) -> str:
-    """
-    Defines the genre and creates variables from the given input DataFrame.
-
-    :param input_string: The input string to be used as input to compile request function.
-    :param compile_request_func: Function to compile a chat request.
-    :return: The name of the prompt file to use.
-    """
-    logging.info('define_genre function started.')
-
-    prompt = _get_prompt_with_input_string(input_string)
-
-    try:
-        response = compile_request_func(prompt)
-        logging.info('Processing variable: %s' % response.choices[0].message.content.strip())
-        return _get_response_file_name(response)
-    except FileNotFoundError:
-        logging.error('File %s not found.' % _get_response_file_name(response))
-    except Exception as e:
-        logging.error('Failed to create response for variable. Error: %s' % e)
-
-def _get_prompt_with_input_string(input_string: str) -> str:
-    """
-    :param input_string: String representing the input to be appended to the prompt.
-    :return: A string representing the prompt with the input string appended.
-    """
-    with open('prompt.txt', 'r') as file:
-        prompt_txt = file.read()
-    return f"{prompt_txt}\n{input_string}"
-
-def _get_response_file_name(response) -> str:
-    """
-    :param response: The response object that contains the choices and message content.
-    :return: The file name for the response, with '.csv' appended.
-    """
-    return response.choices[0].message.content.strip() + '.csv'

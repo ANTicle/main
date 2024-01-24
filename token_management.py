@@ -1,6 +1,7 @@
 import datetime
 import os
 import csv
+import tiktoken
 
 #Total Token Managment
 def record_token_usage(total_tokens):
@@ -49,6 +50,7 @@ def validate_and_swap_api_key(token_sum, max_api_usage = 500000):
     elif os.environ['OPENAI_API_KEY'] == os.environ.get('OPENAI_API_KEY_3', ''):
         api_key = os.getenv('OPENAI_API_KEY')
     os.environ['OPENAI_API_KEY'] = api_key
+
 
 #Async Token Mangement
 def compute_chat_tokens(request_json, encoding, completion_tokens):
@@ -100,3 +102,51 @@ def compute_prompt_tokens(request_json, encoding, completion_tokens):
         raise TypeError(
             'Expecting either string or list of strings for "prompt" field in completion request'
         )
+
+def compute_embedding_tokens(request_json, encoding):
+    """
+    Compute the number of tokens in the input or inputs in the request JSON using the given encoding.
+
+    :param request_json: A JSON object that contains the input or inputs.
+    :type request_json: dict
+    :param encoding: The encoding used to encode the input or inputs.
+    :type encoding: Encoding
+    :return: The number of tokens in the input or inputs.
+    :rtype: int
+    :raises TypeError: If the "input" field in the request JSON is not a string or a list of strings.
+    """
+    input = request_json["input"]
+    if isinstance(input, str):
+        num_tokens = len(encoding.encode(input))
+        return num_tokens
+    elif isinstance(input, list):  # multiple inputs
+        num_tokens = sum([len(encoding.encode(i)) for i in input])
+        return num_tokens
+    else:
+        raise TypeError(
+            'Expecting either string or list of strings for "inputs" field in embedding request'
+        )
+
+def num_tokens_consumed_from_request(request_json: dict, api_endpoint: str, token_encoding_name: str):
+    """
+    :param request_json: A dictionary containing the JSON request data.
+    :param api_endpoint: A string representing the API endpoint.
+    :param token_encoding_name: A string representing the name of the token encoding.
+
+    :return: An integer representing the number of tokens consumed from the request.
+
+    """
+    encoding = tiktoken.get_encoding(token_encoding_name)
+    if api_endpoint.endswith("completions"):
+        max_tokens = request_json.get("max_tokens", 15)
+        n = request_json.get("n", 1)
+        completion_tokens = n * max_tokens
+        if api_endpoint.startswith("chat/"):
+            return compute_chat_tokens(request_json, encoding, completion_tokens)
+        else:
+            return compute_prompt_tokens(request_json, encoding, completion_tokens)
+    elif api_endpoint == "embeddings":
+        return compute_embedding_tokens(request_json, encoding)
+    else:
+        raise NotImplementedError(f'API endpoint "{api_endpoint}" not implemented in this script')
+
