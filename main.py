@@ -1,13 +1,13 @@
 import os
 import asyncio
 import pandas as pd
-from utyls import (convert_csv_to_array, generate_chat_completion_requests,
-                   process_api_requests_from_file, save_generated_data_from_async_req)
+from base_functions import convert_csv_to_array
 from token_management import validate_and_swap_api_key
-from output_management import rename_and_clear_output_file
+from output_management import rename_and_clear_output_file, save_generated_data_from_async_req
 from history_management import append_output_to_history
 from define_genre import define_genre_and_create_variables_from_df
 from hallucination_check import get_text_value, compare_facts
+from async_requests import process_api_requests_from_file, generate_chat_completion_requests
 
 if __name__ == "__main__":
     output_files = ['output.jsonl', 'output.csv']

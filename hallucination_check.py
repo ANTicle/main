@@ -1,4 +1,6 @@
-from utyls import compile_chat_request
+from base_functions import linear_chat_request
+
+
 def get_text_value(df):
     """
     Check if the title "Text" exists in the DataFrame.
@@ -29,7 +31,7 @@ def compare_facts(input, output):
     Achte außerdem darauf das der zweite text, keine Fakten enthält, welche so nicht auch in dem ersten Text vorhanden sind. Wenn du in dem zweiten Text Fakten findest, welche nicht in dem ersten enthalten sind ist das ein Problem.
     Der zweite Text darf weniger details einhalten als der erste. Das ist kein Problem. 
     Wenn ein signifikantes Problem vorhanden ist, antworte mit dem Wort "Es gibt folgendes Problem:" gefolgt von einer Beschreibung des Problems. Wenn kein Problem vorhanden ist, sondern nur fehelende Details antworte mit "Fehlende Details:" gefolgt von einer Liste der fehlenden Details.''' + '\n' + '\n' + "Erster Text" + '\n' + str(input) + '\n' + '\n' + "Zweiter Text" + '\n' + str(output)
-    compare = compile_chat_request(compare_prompt)
+    compare = linear_chat_request(compare_prompt)
     choice = compare.choices[0].message.content.strip()  # Retrieve the first Choice object
 
     return choice

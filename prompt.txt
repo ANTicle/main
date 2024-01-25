@@ -1,1 +1,0 @@
-Lies die folgende Meldung genau durch. Bestimme das Genre der Meldung. Gehört sie in die Kathegorie Wetter, Politik, Wirtschaft oder Regional. Antworte nur mit dem Genre. Gehört die Meldung in das Genre Wetter soll die Antwort beispielsweise nur "Wetter" sein. Nichts anderes.

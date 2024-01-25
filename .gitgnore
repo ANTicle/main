@@ -2,3 +2,6 @@
 test.txt
 history.csv
 history.json
+token_count_history.csv
+tokens_log.csv
+Fehlende_Details.txt
