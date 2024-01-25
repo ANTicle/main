@@ -1,0 +1,8 @@
+#1 muss ausgefüllt sein
+API_KEY_1 =
+API_KEY_2 =
+API_Key_3 =
+
+# default wenn leer 500.000
+Token_Daily_Max =
+

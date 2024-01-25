@@ -26,6 +26,7 @@ def record_token_usage(total_tokens):
                 writer.writerow(headers)
     with open(filename, 'a', newline='') as tokens_log:
         writer = csv.writer(tokens_log)
+        print(total_tokens)
         writer.writerow([timestamp, total_tokens])
 
 def validate_and_swap_api_key(token_sum, max_api_usage = 500000):
