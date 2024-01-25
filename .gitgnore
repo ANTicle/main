@@ -3,4 +3,5 @@ test.txt
 history.csv
 history.json
 token_count_history.csv
-Tokens_log.csv
+tokens_log.csv
+Fehlende_Details.txt
