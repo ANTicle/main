@@ -1,6 +1,10 @@
 import json
 import csv
 import os
+
+from output_management import rename_and_clear_output_file
+
+
 def append_output_to_history(output_file, history_file):
     """
     Append output from 'output_file' to 'history_file'.
@@ -25,3 +29,12 @@ def append_output_to_history(output_file, history_file):
         # Empty the output file by removing it and recreating it as an empty file
         os.remove(output_file)
         open(output_file, 'w').close()
+
+
+def check_output_and_history_files(output_files, history_files):
+    for output_file, history_file in zip(output_files, history_files):
+        if os.path.exists(output_file) and os.path.exists(history_file):
+            append_output_to_history(output_file, history_file)
+        else:
+            rename_and_clear_output_file(output_file, history_file)
+        print('Output cleanup done')

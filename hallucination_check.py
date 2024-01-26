@@ -1,3 +1,5 @@
+import datetime
+
 from base_functions import linear_chat_request
 
 
@@ -34,3 +36,29 @@ def compare_facts(input, output):
     choice = compare.choices[0].message.content.strip()  # Retrieve the first Choice object
 
     return choice
+
+
+def check_hallucinations(input_collection, async_df):
+    """
+    Check for hallucinations in the given input collection and async_df.
+
+    :param input_collection: The input collection to compare with the output text.
+    :type input_collection: list
+    :param async_df: The async DataFrame representing the output text.
+    :type async_df: DataFrame
+    :return: True if hallucinations are found, False otherwise.
+    :rtype: bool
+    """
+    output_text = get_text_value(async_df)  # separate text for hallucination check
+    hallucination_check = compare_facts(input_collection, output_text)
+    print(hallucination_check)
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if "Es gibt folgendes Problem:" in hallucination_check:
+        with open('Output_data/hallucinations.txt', 'w') as file:
+            file.write(hallucination_check + timestamp)
+        return True
+    elif "Fehlende Details" in hallucination_check:
+        with open('Output_data/Fehlende_Details.txt', 'w') as file:
+            file.write(hallucination_check)
+        return False
+    return True

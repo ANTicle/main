@@ -2,6 +2,11 @@ import os
 import subprocess
 import sys
 
+import pandas as pd
+
+from token_management import validate_and_swap_api_key
+
+
 def execute_install_and_run():
     """
     Execute the installation and running process. This method performs the following steps:
@@ -104,3 +109,13 @@ def update_install_count():
         f.write(str(install))
 
     return install
+
+
+def setup_config():
+    update_install_count()
+    update_environment_variables()
+    if os.path.exists('Logging_Files/tokens_log.csv'):
+        async_df = pd.read_csv('Logging_Files/tokens_log.csv')
+        token_sum = async_df['tokens'].sum()
+        print(f"Token sum: {token_sum}")
+        validate_and_swap_api_key(token_sum)

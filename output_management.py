@@ -103,3 +103,8 @@ def extract_generated_data(response):
         return response[1]["choices"][0]["message"]["tool_calls"][0]["function"]["arguments"]
     except KeyError:
         return response[1]["choices"][0]["message"]["content"]
+
+
+def clear_files():
+    open('Output_data/output.csv', 'w').close()
+    open('temp/output.jsonl', 'w').close()

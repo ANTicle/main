@@ -2,6 +2,11 @@ import os
 import glob
 from docx import Document
 
+from async_requests import generate_chat_completion_requests
+from base_functions import convert_csv_to_array
+from define_genre import define_genre_and_create_variables_from_df
+
+
 def read_docx(file):
     """
     Read the contents of a .docx file and return a string representation of the text.
@@ -39,3 +44,18 @@ def read_and_concatenate_files(directory):
         all_contents += f'"Quelle {idx}: " {contents} '
 
     return all_contents
+
+
+def process_data(input_collection):
+    """
+    Process the given input collection.
+
+    :param input_collection: The input collection.
+    :return: The file path for chat completion requests and the processed data.
+    """
+    prompt_b_o_genre = define_genre_and_create_variables_from_df(input_collection)
+    print('input: ' + prompt_b_o_genre + ' stop input')
+    data = convert_csv_to_array(prompt_b_o_genre, 'temp/data.py')
+    requests_filepath = 'temp/data.py'
+    generate_chat_completion_requests(requests_filepath, data, input_collection, model_name="gpt-4-1106-preview")
+    return requests_filepath, data
