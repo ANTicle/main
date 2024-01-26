@@ -3,6 +3,14 @@ import glob
 from docx import Document
 
 def read_docx(file):
+    """
+    Read the contents of a .docx file and return a string representation of the text.
+
+    :param file: The file path of the .docx file to be read.
+    :type file: str
+    :return: The string representation of the text in the .docx file.
+    :rtype: str
+    """
     doc = Document(file)
     full_text = []
     for para in doc.paragraphs:
@@ -11,6 +19,12 @@ def read_docx(file):
 
 
 def read_and_concatenate_files(directory):
+    """
+    Read and concatenate files in a directory.
+
+    :param directory: The directory containing the files.
+    :return: The concatenated contents of the files.
+    """
     files = glob.glob(os.path.join(directory, '*'))
     all_contents = ""
     for idx, file in enumerate(files, start=1):

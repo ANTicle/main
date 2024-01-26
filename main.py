@@ -27,7 +27,7 @@ if __name__ == "__main__":
             rename_and_clear_output_file(output_file, history_file)
         print('output cleanup done')
 
-    input_collection = read_and_concatenate_files('Input_data')
+    input_collection = read_and_concatenate_files('Input_data') #update with frontened integration
     print(input_collection)
     prompt_b_o_genre = define_genre_and_create_variables_from_df(input_collection)
     print('input: ' + prompt_b_o_genre + ' stop input')
