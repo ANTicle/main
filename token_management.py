@@ -29,7 +29,7 @@ def record_token_usage(total_tokens):
         print(total_tokens)
         writer.writerow([timestamp, total_tokens])
 
-def validate_and_swap_api_key(token_sum, max_api_usage = 500000):
+def validate_and_swap_api_key(token_sum):
     """
 
     Validate and Swap API Key
@@ -42,6 +42,7 @@ def validate_and_swap_api_key(token_sum, max_api_usage = 500000):
     :return: None
 
     """
+    max_api_usage = int(os.environ.get('Token_Daily_Max'))
     api_key = os.getenv('OPENAI_API_KEY')  # default value
     usage_ratio = abs(token_sum - max_api_usage) / max_api_usage
     if usage_ratio <= 0.05:

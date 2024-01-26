@@ -10,10 +10,13 @@ from define_genre import define_genre_and_create_variables_from_df
 from hallucination_check import get_text_value, compare_facts
 from async_requests import process_api_requests_from_file, generate_chat_completion_requests
 from input_management import read_and_concatenate_files
+from setup import update_install_count, update_environment_variables
 
 if __name__ == "__main__":
     output_files = ['output.jsonl', 'output.csv']
     history_files = ['history.jsonl', 'history.csv']
+    update_install_count()
+    update_environment_variables()
     if os.path.exists('Logging_Files/tokens_log.csv'):
         async_df = pd.read_csv('Logging_Files/tokens_log.csv')
         token_sum = async_df['tokens'].sum()
@@ -46,8 +49,8 @@ if __name__ == "__main__":
                 save_filepath='temp/output.jsonl',
                 request_url="https://api.openai.com/v1/chat/completions",
                 api_key=os.getenv("OPENAI_API_KEY"),
-                max_requests_per_minute=float(90000),
-                max_tokens_per_minute=float(170000),
+                max_requests_per_minute= int(os.getenv("max_requests_per_minute")),
+                max_tokens_per_minute=int(os.getenv("max_tokens_per_minute")),
                 token_encoding_name="cl100k_base",
                 max_attempts=int(5),
                 logging_level=int(20),
