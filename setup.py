@@ -3,17 +3,36 @@ import subprocess
 import sys
 
 def execute_install_and_run():
+    """
+    Execute the installation and running process. This method performs the following steps:
+
+    1. Install the required Python packages.
+    2. Update the environment variables.
+    3. Print the updated environment variables.
+
+    :return: None.
+    """
     install_python_packages()
     update_environment_variables()
     print_environment_variables()
 
 def install_python_packages():
+    """
+    Install Python packages listed in the requirements.txt file.
+
+    :return: None
+    """
     with open('requirements.txt', 'r') as file:
         packages = file.readlines()
     for package in packages:
         subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 def update_environment_variables():
+    """
+    Updates environment variables based on the settings in the 'settings.txt' file.
+
+    :return: None
+    """
     defaults = {
         "Token_Daily_Max": "500000",
         "max_requests_per_minute": "90000",
@@ -43,10 +62,24 @@ def update_environment_variables():
             os.environ[key] = config_value
 
 def print_environment_variables():
+    """
+    Prints the environment variables and their values.
+
+    :return: None
+    """
     for var, value in os.environ.items():
         print(f"{var}: {value}")
 
 def check_install_count():
+    """
+
+    Check Install Count
+
+    This function reads the install count from a file and returns it. If the file does not exist or if the value in the file is not a valid integer, it resets the count to 0.
+
+    :return: The install count as an integer.
+
+    """
     try:
         with open("temp/install_count.txt", "r") as f:
             try:
