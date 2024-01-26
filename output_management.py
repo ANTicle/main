@@ -61,7 +61,7 @@ def write_responses_to_csv(responses):
     :rtype: list
     """
     rows = []
-    with open('output.csv', 'w', newline='', encoding='utf-8') as csv_file:
+    with open('Output_data/output.csv', 'w', newline='', encoding='utf-8') as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(['Title', 'Generated Output'])
 

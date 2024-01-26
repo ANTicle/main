@@ -31,7 +31,7 @@ def _get_prompt_with_input_string(input_string: str) -> str:
     :param input_string: String representing the input to be appended to the prompt.
     :return: A string representing the prompt with the input string appended.
     """
-    with open('prompt_genre.txt', 'r') as file:
+    with open('Prompts/prompt_genre.txt', 'r') as file:
         prompt_txt = file.read()
     return f"{prompt_txt}\n{input_string}"
 
@@ -40,4 +40,4 @@ def _get_response_file_name(response) -> str:
     :param response: The response object that contains the choices and message content.
     :return: The file name for the response, with '.csv' appended.
     """
-    return response.choices[0].message.content.strip() + '.csv'
+    return 'Prompts/' + response.choices[0].message.content.strip() + '.csv'

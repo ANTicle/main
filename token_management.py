@@ -6,8 +6,8 @@ import tiktoken
 #Total Token Managment
 def record_token_usage(total_tokens):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    filename = 'tokens_log.csv'
-    history_filename = 'token_count_history.csv'
+    filename = 'Logging_Files/tokens_log.csv'
+    history_filename = 'Logging_Files/token_count_history.csv'
     headers = ['time', 'tokens']
     if os.path.isfile(filename):
         with open(filename, 'r') as file:

@@ -12,8 +12,8 @@ from async_requests import process_api_requests_from_file, generate_chat_complet
 if __name__ == "__main__":
     output_files = ['output.jsonl', 'output.csv']
     history_files = ['history.jsonl', 'history.csv']
-    if os.path.exists('tokens_log.csv'):
-        async_df = pd.read_csv('tokens_log.csv')
+    if os.path.exists('Logging_Files/tokens_log.csv'):
+        async_df = pd.read_csv('Logging_Files/tokens_log.csv')
         token_sum = async_df['tokens'].sum()
         print(token_sum)
         validate_and_swap_api_key(token_sum)
@@ -25,24 +25,24 @@ if __name__ == "__main__":
             rename_and_clear_output_file(output_file, history_file)
         print('output cleanup done')
 
-    with open('test.txt', 'r') as file: #replace when frontend deliveres input
+    with open('Input_data/test.txt', 'r') as file: #replace when frontend deliveres input
         input_collection = file.read()
         print(input_collection)
     prompt_b_o_genre = define_genre_and_create_variables_from_df(input_collection)
     print('input: ' + prompt_b_o_genre + ' stop input')
-    data = convert_csv_to_array(prompt_b_o_genre, 'data.py')
-    requests_filepath = 'data.py'
+    data = convert_csv_to_array(prompt_b_o_genre, 'temp/data.py')
+    requests_filepath = 'temp/data.py'
     generate_chat_completion_requests(requests_filepath, data, input_collection, model_name="gpt-4-1106-preview")
     first_loop = True
     while True:
         if not first_loop:
-            open('output.csv', 'w').close()
-            open('output.jsonl', 'w').close()
+            open('Output_data/output.csv', 'w').close()
+            open('temp/output.jsonl', 'w').close()
         first_loop = False
         asyncio.run(
             process_api_requests_from_file(
                 requests_filepath=requests_filepath,
-                save_filepath='output.jsonl',
+                save_filepath='temp/output.jsonl',
                 request_url="https://api.openai.com/v1/chat/completions",
                 api_key=os.getenv("OPENAI_API_KEY"),
                 max_requests_per_minute=float(90000),
@@ -52,14 +52,14 @@ if __name__ == "__main__":
                 logging_level=int(20),
             )
         )
-        async_df = save_generated_data_from_async_req('output.jsonl') #save async request output
+        async_df = save_generated_data_from_async_req('temp/output.jsonl') #save async request output
         output_text = get_text_value(async_df) #sperate text for hallucination check
         hallucination_check = compare_facts(input_collection, output_text)
         print(hallucination_check)
         if "Es gibt folgendes Problem:" in hallucination_check:
             continue
         elif "Fehlende Details" in hallucination_check:
-            with open('Fehlende_Details.txt', 'w') as file:
+            with open('Output_data/Fehlende_Details.txt', 'w') as file:
                 file.write(hallucination_check)
             break
         else:
