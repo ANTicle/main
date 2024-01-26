@@ -1,4 +1,3 @@
-import datetime
 import aiohttp
 import asyncio
 import logging
@@ -112,7 +111,6 @@ class APIRequest:
             status_tracker.num_tasks_succeeded += 1
             logging.debug(f"Request {self.task_id} saved to {save_filepath}")
             # capture total_tokens and store it in CSV
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             total_tokens = response.get('usage', {}).get('total_tokens')
             record_token_usage(total_tokens)
 
