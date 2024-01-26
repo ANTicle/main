@@ -48,7 +48,7 @@ def print_environment_variables():
 
 def check_install_count():
     try:
-        with open("install_count.txt", "r") as f:
+        with open("temp/install_count.txt", "r") as f:
             try:
                 install = int(f.read())
             except ValueError:
@@ -67,7 +67,7 @@ def update_install_count():
         install += 1
     print(install)
     # Write updated counter back into the file
-    with open("install_count.txt", "w") as f:
+    with open("temp/install_count.txt", "w") as f:
         f.write(str(install))
 
     return install
