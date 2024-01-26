@@ -13,8 +13,8 @@ from input_management import read_and_concatenate_files
 from setup import update_install_count, update_environment_variables
 
 if __name__ == "__main__":
-    output_files = ['output.jsonl', 'output.csv']
-    history_files = ['history.jsonl', 'history.csv']
+    output_files = ['temp/output.jsonl', 'Output_data/output.csv']
+    history_files = ['Logging_Files/history.jsonl', 'Logging_Files/history.csv', ]
     update_install_count()
     update_environment_variables()
     if os.path.exists('Logging_Files/tokens_log.csv'):
