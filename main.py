@@ -5,7 +5,7 @@ from history_management import check_output_and_history_files
 from hallucination_check import check_hallucinations
 from async_requests import process_api_requests_from_file
 from input_management import read_and_concatenate_files, process_data
-from setup import setup_config
+from getting_started import setup_config
 
 if __name__ == "__main__":
     output_files = ['temp/output.jsonl', 'Output_data/output.csv']
