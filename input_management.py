@@ -54,7 +54,6 @@ def process_data(input_collection):
     :return: The file path for chat completion requests and the processed data.
     """
     prompt_b_o_genre = define_genre_and_create_variables_from_df(input_collection)
-    print('input: ' + prompt_b_o_genre + ' stop input')
     data = convert_csv_to_array(prompt_b_o_genre, 'temp/data.py')
     requests_filepath = 'temp/data.py'
     generate_chat_completion_requests(requests_filepath, data, input_collection, model_name="gpt-4-1106-preview")

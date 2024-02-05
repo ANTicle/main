@@ -20,6 +20,7 @@ def define_genre_and_create_variables_from_df(
     try:
         response = compile_request_func(prompt)
         logging.info('Processing variable: %s' % response.choices[0].message.content.strip())
+        print(_get_response_file_name(response))
         return _get_response_file_name(response)
     except FileNotFoundError:
         logging.error('File %s not found.' % _get_response_file_name(response))

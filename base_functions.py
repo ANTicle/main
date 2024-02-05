@@ -42,10 +42,13 @@ def convert_csv_to_array(input_csv_path, output_python_path):
     # put each element into the array
     data = []
     with open(input_csv_path, "r") as input_file:
-        csv_reader = csv.reader(input_file)
+        csv_reader = csv.reader(input_file, delimiter=';')
+        header = next(csv_reader)  # Skip the header
+        index = header.index("Prompt")
         for row in csv_reader:
             if row:
-                data.append(row[1])
+                print(row)
+                data.append(row[index])
     with open(output_python_path, "w") as data_file:
         data_file.write(f'data = {data}')
     return data
