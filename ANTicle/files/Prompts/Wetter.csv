@@ -1,0 +1,6 @@
+SEOTitel, Schreibe fünf passende SEOTitel für einen aktuellen Wetterbericht. Formatiere den Output als "SEO-Titel: 1.SEO-Titel: (hier output einfügen), 2. SEO-Titel: (hier output einfügen),..."
+SEOText, Schreibe drei passende SEOTexte von maximal 250 Zeichen für einen aktuellen Wetterbericht. Formatiere den Output als SEO-Texte: "1.SEO-Text: (hier output einfügen), 2. SEO-Text: (hier output einfügen),..."
+Dachzeile, Schreibe fünf Dachzeilen für einen aktuellen Wetterbericht. Formatiere den Output als "Dachzeilen: 1.Dachzeile: (hier output einfügen), 2.Dachzeile: (hier output einfügen),..."
+Titel, Schreibe fünf Titel für einen aktuellen Wetterbericht. Formatiere den Output als "Titel: 1.Titel:(hier output einfügen), 2.Titel:(hier output einfügen),..."
+Teaser, Schreibe drei Teaser für einen aktuellen Wetterbericht. Formatiere den Output als "Teaser: 1.Teaser:(hier output einfügen), 2.Teaser:(hier output einfügen),..."
+Text, Schreibe einen Text für einen aktuellen Wetterbericht. Beziehe sämtliche Informationen aus allen Quellen mit ein. Formatiere den Output als "Text: (hier output einfügen)"
