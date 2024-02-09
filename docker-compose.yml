@@ -1,0 +1,10 @@
+version: '3.8'  # specify docker-compose version
+
+services:
+  ant:  # name of your service
+    build: .  # specifies build context directory
+    command: python manage.py runserver 0.0.0.0:8000  # command to start your application
+    volumes:
+      - .:/app  # mount volume
+    ports:
+      - "8000:8000"  # bind port
