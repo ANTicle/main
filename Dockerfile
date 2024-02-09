@@ -2,7 +2,7 @@
 FROM python:3.9.6-slim-buster
 
 # Set work directory in the container
-WORKDIR /app
+WORKDIR ./main
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1

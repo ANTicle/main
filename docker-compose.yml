@@ -1,7 +1,7 @@
 version: '3.8'  # specify docker-compose version
 
 services:
-  djangoapp:  # name of your service
+  ant:  # name of your service
     build: .  # specifies build context directory
     command: python manage.py runserver 0.0.0.0:8000  # command to start your application
     volumes:
