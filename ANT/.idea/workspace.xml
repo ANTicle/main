@@ -55,7 +55,6 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
-        <env name="OPENAI_API_KEY" value="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" />
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
