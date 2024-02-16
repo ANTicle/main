@@ -1,0 +1,54 @@
+{% load crispy_forms_filters %}
+{% load crispy_forms_tags %}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ANT</title>
+    <style>
+        input, select, textarea {
+            /* Increase input field size */
+            height: 100px;
+            font-size: 16px;
+        }
+        button[type=submit] {
+            /* Style the submit button */
+            background-color: #009879;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            opacity: 0.9;
+        }
+        button[type=submit]:hover {
+            opacity:1;
+        }
+    </style>
+</head>
+<body>
+<h1>ANT</h1>
+<form id="inputForm" method="POST">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button type="submit" class="btn btn-primary">Run ANT</button>
+</form>
+<div id="result"></div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $('#inputForm').on('submit', function(e){
+        e.preventDefault();
+        $.ajax({
+            type: 'POST',
+            url: 'my-view/',  // The url of your Django view
+            data: $('#inputForm').serialize(),
+            success: function(response){
+                $('#result').html(response);
+            }
+        });
+    });
+</script>
+</body>
+</html>

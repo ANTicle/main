@@ -1,7 +1,7 @@
 import csv
 import json
 import os
-from fuzzywuzzy import fuzz
+from rapidfuzz import fuzz, process
 from .base_functions import create_dataframe
 
 REPLACE_KEYWORDS = ['SEOTitel', 'SEOText', 'Titel', 'Teaser', 'Dachzeilen', 'Text', 'Liste']
@@ -77,13 +77,13 @@ def write_responses_to_csv(responses):
 def extract_data_from_response(response):
     """
     Extracts data from the given response.
-
     :param response: The response containing the data.
     :return: A tuple containing the extracted title and generated data.
     """
     title = response[0]["messages"][0]["content"]
     generated_data = extract_generated_data(response)
     for keyword in REPLACE_KEYWORDS:
+        # Using rapidfuzz to measure string similarity
         if any(fuzz.ratio(keyword, word) >= 93 for word in title.split(' ')):
             title = keyword
             break
