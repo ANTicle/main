@@ -5,3 +5,7 @@ openai~=1.12.0
 docx2txt~=0.8
 tiktoken~=0.6.0
 fuzzywuzzy~=0.18.0
+rapidfuzz~=3.6.1
+django-crispy-forms~=2.1
+crispy~=2020.1rc0
+crispy-bootstrap4~=2023.1

@@ -1,71 +1,105 @@
-{% load crispy_forms_filters %}
 {% load crispy_forms_tags %}
-
-<!doctype html>
-<html lang="de">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>ANT</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
     <style>
-        input, select, textarea {
-            font-size: 16px;
-        }
-        button[type=submit] {
-            /* Style the submit button */
-            background-color: #009879;
-            color: white;
-            padding: 14px 20px;
-            margin: 8px 0;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            opacity: 0.9;
-        }
-        button[type=submit]:hover {
-            opacity:1;
-        }
-        /* Styling for result box */
-        #result > div {
-            border: 1px solid #009879;
-            padding: 20px;
-            margin-bottom: 10px;
-        }
-        #result > div > h3 {
-            color: #009879;
-        }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 <h1>ANT</h1>
-<form id="inputForm" method="POST">
-    {% csrf_token %}
-    {{ form|crispy }}
-    <button type="submit" class="btn btn-primary">Run ANT</button>
-</form>
-<div id="result"></div>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<div class="container">
+    <div class="row">
+        <div class="col-3">
+            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                {% for field in form %}
+                    <a class="nav-link" id="v-pills-{{ field.name }}-tab" data-toggle="pill" href="#v-pills-{{ field.name }}" role="tab" aria-controls="v-pills-{{ field.name }}" aria-selected="false">{{ field.label }}</a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-9">
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="input-tab" data-toggle="tab" href="#input" role="tab" aria-controls="input" aria-selected="true">Input</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="output-tab" data-toggle="tab" href="#output" role="tab" aria-controls="output" aria-selected="false">Output</a>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="input" role="tabpanel" aria-labelledby="input-tab">
+                    <form id="inputForm" method="POST">
+                        {% csrf_token %}
+                        <div id="dynamicInputs">
+                            {% for field in form %}
+                                <div class="tab-pane fade" id="v-pills-{{ field.name }}" role="tabpanel" aria-labelledby="v-pills-{{ field.name }}-tab">
+                                    {{ field|as_crispy_field }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Generate</button>
+                    </form>
+                </div>
+
+                <div class="tab-pane fade" id="output" role="tabpanel" aria-labelledby="output-tab">
+                    <div id="result"></div>
+                    <button type="button" class="btn btn-secondary" id="regenerate">Regenerate</button>
+                    <button type="button" class="btn btn-success" id="addArticle">+ Neuer Artikel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     $(document).ready(function() {
         $('#inputForm').on('submit', function(e) {
             e.preventDefault();
             const data = new FormData(this);
 
-            fetch('my-view/', {
-                method: 'POST',
-                body: data
-            })
-            .then(response => response.json())
-            .then(response => {
-                $('#result').empty();
-                Object.keys(response).forEach(function(key) {
-                    const header = `<h3>${key}</h3>`;
-                    const content = `<p>${JSON.stringify(response[key], null, 2)}</p>`;
-                    $('#result').append(`<div>${header}${content}</div>`);
-                });
-            })
-            .catch(error => console.error('Error:', error));
+            fetch('my-view/', { method: 'POST', body: data })
+                .then(response => response.json())
+                .then(function(response) {
+                    populateOutputFields(response);
+                    $('#myTab a[href="#output"]').tab('show');
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        $('#regenerate').click(function() {
+            $('#inputForm').submit();
+        });
+
+        $('#addArticle').click(function() {
+
         });
     });
+
+    function populateOutputFields(data) {
+        $('#result').empty();
+        Object.keys(data).forEach(function(key) {
+            const header = `<h3>${key}</h3>`;
+            if(key !== 'Text') {
+                const rows = data[key].split('\n').map(row =>
+                    `<div><textarea class="form-control" rows="5">${row}</textarea></div>`
+                ).join('');
+                $('#result').append(`<div>${header}${rows}</div>`);
+            } else {
+                const content = `<div><textarea class="form-control" rows="5">${data[key]}</textarea></div>`;
+                $('#result').append(`<div>${header}${content}</div>`);
+            }
+        });
+    }
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 </body>
 </html>

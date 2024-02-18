@@ -120,5 +120,6 @@ def csv_to_json(request):
     """
     with open('./Output_data/output.csv', 'r') as f:
         reader = csv.reader(f)
+        next(reader)
         data_dict = {rows[0]: rows[1] for rows in reader}
     return JsonResponse(data_dict)
