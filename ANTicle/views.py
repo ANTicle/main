@@ -1,13 +1,13 @@
 from django.shortcuts import render
 from .forms import InputDataForm  # Ensure to have correct import path
-from django.http import JsonResponse
+from django.http import HttpResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import os
 import pandas as pd
 import asyncio
-from .utils.output_management import save_generated_data_from_async_req, clear_files
+from .utils.output_management import save_generated_data_from_async_req, clear_files, csv_to_json
 from .utils.history_management import check_output_and_history_files
 from .utils.hallucination_check import check_hallucinations
 from .utils.async_requests import process_api_requests_from_file
@@ -56,5 +56,6 @@ class ANT(View):
             async_df = save_generated_data_from_async_req('temp/output.jsonl')  # save async request output
             if not check_hallucinations(input_collection, async_df):
                 break
-        output_data = pd.read_csv('Output_data/output.csv').to_dict()
-        return JsonResponse(output_data)
+        output_data = csv_to_json(request)
+        print(HttpResponse(output_data))
+        return HttpResponse(output_data, content_type='application/json')

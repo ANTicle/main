@@ -3,6 +3,8 @@ import json
 import os
 from rapidfuzz import fuzz, process
 from .base_functions import create_dataframe
+from django.http import JsonResponse
+
 
 REPLACE_KEYWORDS = ['SEOTitel', 'SEOText', 'Titel', 'Teaser', 'Dachzeilen', 'Text', 'Liste']
 
@@ -108,3 +110,15 @@ def extract_generated_data(response):
 def clear_files():
     open('./Output_data/output.csv', 'w').close()
     open('./temp/output.jsonl', 'w').close()
+
+def csv_to_json(request):
+    """
+    Convert a CSV file to a JSON response.
+
+    :param request: The HTTP request object.
+    :return: A JSON response object containing the converted data.
+    """
+    with open('./Output_data/output.csv', 'r') as f:
+        reader = csv.reader(f)
+        data_dict = {rows[0]: rows[1] for rows in reader}
+    return JsonResponse(data_dict)
