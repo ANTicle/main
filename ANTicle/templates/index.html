@@ -14,30 +14,31 @@
 <h1>ANT</h1>
 
 <div class="container">
-    <div class="row">
-        <div class="col-3">
-            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                {% for field in form %}
-                    <a class="nav-link" id="v-pills-{{ field.name }}-tab" data-toggle="pill" href="#v-pills-{{ field.name }}" role="tab" aria-controls="v-pills-{{ field.name }}" aria-selected="false">{{ field.label }}</a>
-                {% endfor %}
-            </div>
-        </div>
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="input-tab" data-toggle="tab" href="#input" role="tab" aria-controls="input" aria-selected="true">Input</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="output-tab" data-toggle="tab" href="#output" role="tab" aria-controls="output" aria-selected="false">Output</a>
+        </li>
+    </ul>
 
-        <div class="col-9">
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="input-tab" data-toggle="tab" href="#input" role="tab" aria-controls="input" aria-selected="true">Input</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="output-tab" data-toggle="tab" href="#output" role="tab" aria-controls="output" aria-selected="false">Output</a>
-                </li>
-            </ul>
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="input" role="tabpanel" aria-labelledby="input-tab">
+            <div class="row">
+                <!-- Left sidebar -->
+                <div class="col-3">
+                    <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                        {% for field in form %}
+                           <a class="nav-link" id="v-pills-{{ field.name }}-tab" data-toggle="pill" href="#v-pills-{{ field.name }}" role="tab" aria-controls="v-pills-{{ field.name }}" aria-selected="false">{{field.label}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
 
-            <div class="tab-content" id="myTabContent">
-                <div class="tab-pane fade show active" id="input" role="tabpanel" aria-labelledby="input-tab">
+                <div class="col-9">
                     <form id="inputForm" method="POST">
                         {% csrf_token %}
-                        <div id="dynamicInputs">
+                        <div id="dynamicInputs" class="tab-content">
                             {% for field in form %}
                                 <div class="tab-pane fade" id="v-pills-{{ field.name }}" role="tabpanel" aria-labelledby="v-pills-{{ field.name }}-tab">
                                     {{ field|as_crispy_field }}
@@ -47,13 +48,13 @@
                         <button type="submit" class="btn btn-primary">Generate</button>
                     </form>
                 </div>
-
-                <div class="tab-pane fade" id="output" role="tabpanel" aria-labelledby="output-tab">
-                    <div id="result"></div>
-                    <button type="button" class="btn btn-secondary" id="regenerate">Regenerate</button>
-                    <button type="button" class="btn btn-success" id="addArticle">+ Neuer Artikel</button>
-                </div>
             </div>
+        </div>
+
+        <div class="tab-pane fade" id="output" role="tabpanel" aria-labelledby="output-tab">
+            <div id="result"></div>
+            <button type="button" class="btn btn-secondary" id="regenerate">Regenerate</button>
+            <button type="button" class="btn btn-success" id="addArticle">+ Neuer Artikel</button>
         </div>
     </div>
 </div>
