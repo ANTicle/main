@@ -1,39 +1,80 @@
 from django.shortcuts import render
 from .forms import InputDataForm  # Ensure to have correct import path
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import os
 import pandas as pd
+import json
 import asyncio
 from .utils.output_management import save_generated_data_from_async_req, clear_files, csv_to_json
 from .utils.history_management import check_output_and_history_files
 from .utils.hallucination_check import check_hallucinations
 from .utils.async_requests import process_api_requests_from_file
-from .utils.input_management import read_and_concatenate_files, process_data
+from .utils.input_management import read_and_concatenate_files, process_data, format_form
 from .utils.getting_started import setup_config
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ANT(View):
+    """
+    ANT class
+
+    The ANT class is a view class that handles HTTP requests and responses. It is responsible
+    for rendering the index.html template with an empty form for GET requests, and processing
+    and returning the output data for POST requests. It also contains various auxiliary methods
+    that are used for data processing and file handling.
+
+    Methods:
+        - get(request, *args, **kwargs):
+            Handles the GET request and renders the index.html template with an empty form.
+            :param request: HttpRequest object
+            :param args: Additional positional arguments
+            :param kwargs: Additional keyword arguments
+            :return: Rendered template with the empty form
+
+        - post(request, *args, **kwargs):
+            Handles the POST request and processes the input data form. If the form is valid,
+            it retrieves the cleaned data. Otherwise, it returns a JSON response with an error
+            message indicating that the form data is invalid. It then proceeds to setup the
+            configuration, check the output and history files, process the input data, and
+            make API requests. If any hallucinations are found in the generated output,
+            the process is repeated after clearing the files. Finally, it converts the output
+            data into CSV format and returns a JSON response with the converted data.
+            :param request: HttpRequest object
+            :param args: Additional positional arguments
+            :param kwargs: Additional keyword arguments
+            :return: JSON response with the converted output data
+    """
     def get(self, request, *args, **kwargs):
         form = InputDataForm()
         return render(request, "index.html", {"form": form})
 
     def post(self, request, *args, **kwargs):
-        form = InputDataForm(request.POST)
-        if form.is_valid():
-            # Process your form data here
-            input_data = form.cleaned_data
-            # Use the input_data in subsequent operations
+        print('noch ein Test 6')
+        """
+        :param request: The HTTP request object
+        :param args: Optional positional arguments
+        :param kwargs: Optional keyword arguments
+        :return: The HTTP response with output data in JSON format
+        """
+        with open('form_data.json', 'w') as outfile:
+            json.dump(request.POST, outfile, ensure_ascii=False)
+        input_data = None
+        if request.POST:
+            input_data = format_form('form_data.json')
+            print(input_data)
+
 
         output_files = ['temp/output.jsonl', 'Output_data/output.csv']
         history_files = ['Logging_Files/history.jsonl', 'Logging_Files/history.csv', ]
         setup_config()
         print('config done')
         check_output_and_history_files(output_files, history_files)
-        input_collection = read_and_concatenate_files('Input_data')  # update with frontened integration
-        print(input_collection)
+
+        if input_data:  # check if input_data is not None (if None it means it is not initialised)
+            input_collection = input_data
+            print(input_collection)
         requests_filepath, data = process_data(input_collection)
         first_loop = True
         while True:

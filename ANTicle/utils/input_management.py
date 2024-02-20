@@ -1,11 +1,37 @@
 import os
 import glob
 import docx2txt
+from django.shortcuts import render
 
 from .async_requests import generate_chat_completion_requests
 from .base_functions import convert_csv_to_array
 from .define_genre import define_genre_and_create_variables_from_df
+from django.http import HttpResponse
+from ..forms import InputDataForm
 
+import json
+
+
+def format_form(input_json):
+    string_output = ""
+    start = False
+    try:
+        with open(input_json, 'r') as f:
+            # attempt to load JSON data from the file
+            parsed_json = json.load(f)
+
+        for key in parsed_json:
+            if key == "Quelle_1":
+                start = True
+            if start and parsed_json[key]:
+                string_output += f"{key}:\n\n{parsed_json[key]}\n\n"
+
+    except json.JSONDecodeError:
+        print(f"Error: Could not decode JSON from {input_json}")
+    except FileNotFoundError:
+        print(f"Error: File {input_json} not found")
+
+    return string_output
 
 def read_docx(file):
     """

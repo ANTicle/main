@@ -1,3 +1,4 @@
+{% load crispy_forms_filters %}
 {% load crispy_forms_tags %}
 <!DOCTYPE html>
 <html lang="en">
@@ -59,9 +60,37 @@
     </div>
 </div>
 
+<style>
+textarea::before {
+    content: "";
+    height: 1px;
+    display: inline-block;
+    vertical-align: top;
+}
+.align-top {
+    line-height: normal;
+    padding: 0;
+    height: 500px;
+    overflow-y: auto;
+    width: 100%;
+    resize: both;
+    text-align: start;
+}
+textarea.other-control {
+    margin-bottom: 10px;
+}
+</style>
+
 <script>
+
+    function autoResize(element) {
+        element.style.height = "5px";
+        element.style.height = (element.scrollHeight)+"px";
+    }
+
     $(document).ready(function() {
-        $('#inputForm').on('submit', function(e) {
+
+        $("#inputForm").on('submit', function(e) {
             e.preventDefault();
             const data = new FormData(this);
 
@@ -84,20 +113,42 @@
     });
 
     function populateOutputFields(data) {
-        $('#result').empty();
-        Object.keys(data).forEach(function(key) {
-            const header = `<h3>${key}</h3>`;
-            if(key !== 'Text') {
-                const rows = data[key].split('\n').map(row =>
-                    `<div><textarea class="form-control" rows="5">${row}</textarea></div>`
-                ).join('');
-                $('#result').append(`<div>${header}${rows}</div>`);
-            } else {
-                const content = `<div><textarea class="form-control" rows="5">${data[key]}</textarea></div>`;
-                $('#result').append(`<div>${header}${content}</div>`);
-            }
-        });
-    }
+    $('#result').empty();
+    Object.keys(data).forEach(function(key) {
+        const header = `<h3>${key}</h3>`;
+        if(key !== 'Text') {
+            const rows = data[key].split('\n').map((row, index) => {
+                const outputtextarea = document.createElement('textarea');
+                outputtextarea.classList.add('other-control');
+                outputtextarea.rows = '10';
+                outputtextarea.id = `outputtextarea-${index}`;
+                outputtextarea.style.marginBottom = "10px";
+                outputtextarea.textContent = row;
+                outputtextarea.height = 100
+                const newDiv = document.createElement('div');
+                newDiv.appendChild(outputtextarea);
+                $('#result').append(newDiv);
+                autoResize(outputtextarea);
+                return newDiv.outerHTML;
+            }).join('');
+            $('#result').append(`<div>${header}${rows}</div>`);
+        } else {
+            const outputtextarea = document.createElement('textarea');
+            outputtextarea.classList.add('other-control');
+            outputtextarea.rows = '10';
+            outputtextarea.id = 'outputtextarea';
+            outputtextarea.style.marginBottom = "10px";
+            outputtextarea.textContent = data[key];
+            const newDiv = document.createElement('div');
+            newDiv.appendChild(outputtextarea);
+            $('#result').append(newDiv);
+            autoResize(outputtextarea);
+            const content = newDiv.outerHTML;
+            $('#result').append(`<div>${header}${content}</div>`);
+        }
+    });
+}
+
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
