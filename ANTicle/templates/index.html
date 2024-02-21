@@ -1,7 +1,7 @@
 {% load crispy_forms_filters %}
 {% load crispy_forms_tags %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <title>ANT</title>
@@ -116,36 +116,29 @@ textarea.other-control {
     $('#result').empty();
     Object.keys(data).forEach(function(key) {
         const header = `<h3>${key}</h3>`;
-        if(key !== 'Text') {
-            const rows = data[key].split('\n').map((row, index) => {
-                const outputtextarea = document.createElement('textarea');
-                outputtextarea.classList.add('other-control');
-                outputtextarea.rows = '10';
-                outputtextarea.id = `outputtextarea-${index}`;
-                outputtextarea.style.marginBottom = "10px";
-                outputtextarea.textContent = row;
-                outputtextarea.height = 100
-                const newDiv = document.createElement('div');
-                newDiv.appendChild(outputtextarea);
-                $('#result').append(newDiv);
-                autoResize(outputtextarea);
-                return newDiv.outerHTML;
-            }).join('');
-            $('#result').append(`<div>${header}${rows}</div>`);
-        } else {
-            const outputtextarea = document.createElement('textarea');
-            outputtextarea.classList.add('other-control');
-            outputtextarea.rows = '10';
-            outputtextarea.id = 'outputtextarea';
-            outputtextarea.style.marginBottom = "10px";
-            outputtextarea.textContent = data[key];
-            const newDiv = document.createElement('div');
-            newDiv.appendChild(outputtextarea);
-            $('#result').append(newDiv);
-            autoResize(outputtextarea);
-            const content = newDiv.outerHTML;
-            $('#result').append(`<div>${header}${content}</div>`);
-        }
+        const outputtextarea = document.createElement('textarea');
+        outputtextarea.classList.add('other-control');
+        outputtextarea.style.width = "100%";
+        outputtextarea.rows = '10';
+        outputtextarea.id = `${key}-outputtextarea`;
+        outputtextarea.style.marginBottom = "10px";
+        outputtextarea.textContent = data[key];
+        autoResize(outputtextarea);
+
+        const textareaContainer = document.createElement('div');
+        textareaContainer.appendChild(outputtextarea);
+        const containerHtml = textareaContainer.outerHTML;
+
+        const keyContainer = document.createElement('div');
+        keyContainer.innerHTML = header;
+        const keyContainerHtml = keyContainer.outerHTML;
+
+        const newContainer = document.createElement('div');
+        newContainer.style.display = "flex";
+        newContainer.style.justifyContent = "space-between";
+        newContainer.innerHTML = keyContainerHtml + containerHtml;
+
+        $('#result').append(newContainer);
     });
 }
 

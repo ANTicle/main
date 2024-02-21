@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+import re
 from rapidfuzz import fuzz, process
 from .base_functions import create_dataframe
 from django.http import JsonResponse
@@ -111,15 +112,27 @@ def clear_files():
     open('./Output_data/output.csv', 'w').close()
     open('./temp/output.jsonl', 'w').close()
 
+
+import csv
+from django.http import JsonResponse
+import re
+
+
 def csv_to_json(request):
     """
     Convert a CSV file to a JSON response.
-
     :param request: The HTTP request object.
     :return: A JSON response object containing the converted data.
     """
     with open('./Output_data/output.csv', 'r') as f:
-        reader = csv.reader(f)
-        next(reader)
-        data_dict = {rows[0]: rows[1] for rows in reader}
+        file_content = f.read()
+
+    # Replace two or more consecutive newline characters with a single newline
+    #file_content = re.sub("\n{2,}", "\n", file_content)
+
+    # Now, handle the processed string as a CSV
+    reader = csv.reader(file_content.splitlines())
+    next(reader)
+    data_dict = {rows[0]: rows[1] for rows in reader}
+
     return JsonResponse(data_dict)

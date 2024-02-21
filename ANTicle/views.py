@@ -2,6 +2,7 @@ from django.shortcuts import render
 from .forms import InputDataForm  # Ensure to have correct import path
 from django.http import HttpResponse, JsonResponse
 from django.views import View
+import csv
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import os
@@ -97,6 +98,16 @@ class ANT(View):
             async_df = save_generated_data_from_async_req('temp/output.jsonl')  # save async request output
             if not check_hallucinations(input_collection, async_df):
                 break
-        output_data = csv_to_json(request)
-        print(HttpResponse(output_data))
-        return HttpResponse(output_data, content_type='application/json')
+
+        with open('./Output_data/output.csv', 'r') as f:
+            file_content = f.read()
+
+        # Replace two or more consecutive newline characters with a single newline
+        # file_content = re.sub("\n{2,}", "\n", file_content)
+
+        # Now, handle the processed string as a CSV
+        reader = csv.reader(file_content.splitlines())
+        next(reader)
+        data_dict = {rows[0]: rows[1] for rows in reader}
+
+        return JsonResponse(data_dict)
