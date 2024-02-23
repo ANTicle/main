@@ -1,150 +1,268 @@
-{% load crispy_forms_filters %}
+{% load tailwind_filters %}
 {% load crispy_forms_tags %}
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <title>ANT</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        .hidden { display: none; }
+        body {
+            background-color: #222222;
+            color: #fbfeff;
+        }
+        .btn {
+            width: 50vw;
+            height: 5vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            font-size: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        .form-group textarea {
+            width: 90%;
+            height:auto;
+            padding: 1%;
+            margin-bottom: 0.5em;
+            background-color: #4e4e4e;
+            border-color: #41efb4;
+            border-radius: 10px;
+        }
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+        }
+        .form-label {
+            width: 10%;
+            text-align: left;
+            display: inline-block;
+            padding: 5px;
+        }
+        .form-label:hover {
+            color: #41efb4;
+        }
+        .field-content {
+            width: 90%;
+        }
+        .custom-btn {
+            background-color: #41efb4;
+            color: #fbfeff;
+            border: none;
+        }
+        .custom-btn:hover {
+            background-color: #34d399;
+        }
+        .input{
+            margin-top: 50px;
+        }
+        .spinner {
+            border: 16px solid #f3f3f3; /* Light grey */
+            border-top: 16px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
+
 <body>
-<h1>ANT</h1>
+<div id="buttons" class="w-full flex justify-center items-center">
+    <button id="inputMenu" class="btn btn-1 custom-btn w-5/8 min-w-[125px] h-[6.25vh] min-h-[50px] flex items-center justify-center my-5 relative text-lg font-bold" style="background-color: #292929;" onclick="changeTab('input')">Input</button>
+    <button id="outputMenu" class="btn custom-btn w-5/8 min-w-[125px] h-[6.25vh] min-h-[50px] flex items-center justify-center my-5 relative text-lg font-bold" style="background-color: #292929;" onclick="changeTab('output')">Output</button>
+</div>
+<div class="spinner" id="loadingSpinner"></div>
 
-<div class="container">
-    <ul class="nav nav-tabs" id="myTab" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link active" id="input-tab" data-toggle="tab" href="#input" role="tab" aria-controls="input" aria-selected="true">Input</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" id="output-tab" data-toggle="tab" href="#output" role="tab" aria-controls="output" aria-selected="false">Output</a>
-        </li>
-    </ul>
-
-    <div class="tab-content" id="myTabContent">
-        <div class="tab-pane fade show active" id="input" role="tabpanel" aria-labelledby="input-tab">
-            <div class="row">
-                <!-- Left sidebar -->
-                <div class="col-3">
-                    <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                        {% for field in form %}
-                           <a class="nav-link" id="v-pills-{{ field.name }}-tab" data-toggle="pill" href="#v-pills-{{ field.name }}" role="tab" aria-controls="v-pills-{{ field.name }}" aria-selected="false">{{field.label}}</a>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <div class="col-9">
-                    <form id="inputForm" method="POST">
-                        {% csrf_token %}
-                        <div id="dynamicInputs" class="tab-content">
-                            {% for field in form %}
-                                <div class="tab-pane fade" id="v-pills-{{ field.name }}" role="tabpanel" aria-labelledby="v-pills-{{ field.name }}-tab">
-                                    {{ field|as_crispy_field }}
-                                </div>
-                            {% endfor %}
-                        </div>
-                        <button type="submit" class="btn btn-primary">Generate</button>
-                    </form>
-                </div>
+<div id="input" class="mx-auto px-4 sm:px-6 lg:px-8" style="margin: 50px;">
+    <form id="inputForm" method="POST">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+            <label class="form-label">{{ field.label }}</label>
+            <div class="field-content" style="display: {% if forloop.first %}block{% else %}none{% endif %};">
+                {{ field }}
             </div>
         </div>
-
-        <div class="tab-pane fade" id="output" role="tabpanel" aria-labelledby="output-tab">
-            <div id="result"></div>
-            <button type="button" class="btn btn-secondary" id="regenerate">Regenerate</button>
-            <button type="button" class="btn btn-success" id="addArticle">+ Neuer Artikel</button>
+        {% endfor %}
+        <div class="text-center mt-4">
+            <button type="submit" class="custom-btn font-bold py-2 px-4 rounded">Generate</button>
         </div>
-    </div>
+    </form>
 </div>
 
-<style>
-textarea::before {
-    content: "";
-    height: 1px;
-    display: inline-block;
-    vertical-align: top;
-}
-.align-top {
-    line-height: normal;
-    padding: 0;
-    height: 500px;
-    overflow-y: auto;
-    width: 100%;
-    resize: both;
-    text-align: start;
-}
-textarea.other-control {
-    margin-bottom: 10px;
-}
-</style>
+<div id="output" class="mx-auto px-4 sm:px-6 lg:px-8 mt-8 hidden">
+    <div class="tabs">
+        <!-- Tabs will be populated here -->
+    </div>
+    <div id="result">
+        <!-- Content for each tab will be displayed here -->
+    </div>
+    <button type="button" class="inline-block text-white font-bold py-2 px-4 rounded" id="regenerate" style="background-color: #4e4e4e;">Regenerate</button>
+    <button type="button" class="inline-block text-white font-bold py-2 px-4 rounded ml-4" id="addArticle" style="background-color: #41efb4;">+ Neuer Artikel</button>
+</div>
 
-<script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', (event) => {
+    const formGroups = Array.from(document.querySelectorAll('.form-group'));
+    formGroups.forEach((formGroup, i) => {
+        const label = formGroup.querySelector('label');
+        const fieldContent = formGroup.querySelector('.field-content');
+        label.style.cursor = 'pointer';
+        label.addEventListener('click', () => {
+            const isDisplayed = fieldContent.style.display !== 'none';
+            fieldContent.style.display = isDisplayed ? 'none' : 'block';
+        });
+    });
+});
+function changeTab(tab) {
+    const inputMenu = document.getElementById('inputMenu');
+    const outputMenu = document.getElementById('outputMenu');
+    const input = document.getElementById('input');
+    const output = document.getElementById('output');
 
-    function autoResize(element) {
-        element.style.height = "5px";
-        element.style.height = (element.scrollHeight)+"px";
+    if (tab === 'input') {
+        input.classList.remove('hidden');
+        output.classList.add('hidden');
+        inputMenu.style.backgroundColor = '#41efb4'; // Selected button color
+        outputMenu.style.backgroundColor = '#292929'; // Non-selected button color
+    } else {
+        output.classList.remove('hidden');
+        input.classList.add('hidden');
+        outputMenu.style.backgroundColor = '#41efb4'; // Selected button color
+        inputMenu.style.backgroundColor = '#292929'; // Non-selected button color
     }
+}
 
-    $(document).ready(function() {
 
-        $("#inputForm").on('submit', function(e) {
-            e.preventDefault();
+$(document).ready(function() {
+    $("#inputMenu").click();
+    $("#inputForm").on('submit', function(e) {
+        e.preventDefault();
+        $('#loadingSpinner').css('display', 'block');
             const data = new FormData(this);
-
             fetch('my-view/', { method: 'POST', body: data })
                 .then(response => response.json())
                 .then(function(response) {
+                    // Hide spinner
+                    $('#loadingSpinner').css('display', 'none');
                     populateOutputFields(response);
-                    $('#myTab a[href="#output"]').tab('show');
+                    document.getElementById('outputMenu').click();
+                    document.querySelectorAll('.form-textarea').forEach(autoResize);
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    // Hide spinner
+                    $('#loadingSpinner').css('display', 'none');
+                    console.error('Error:', error)
+                });
         });
 
-        $('#regenerate').click(function() {
-            $('#inputForm').submit();
-        });
 
-        $('#addArticle').click(function() {
-
-        });
+    $('#regenerate').click(function() {
+        $('#inputForm').submit();
     });
 
-    function populateOutputFields(data) {
-    $('#result').empty();
-    Object.keys(data).forEach(function(key) {
-        const header = `<h3>${key}</h3>`;
-        const outputtextarea = document.createElement('textarea');
-        outputtextarea.classList.add('other-control');
-        outputtextarea.style.width = "100%";
-        outputtextarea.rows = '10';
-        outputtextarea.id = `${key}-outputtextarea`;
-        outputtextarea.style.marginBottom = "10px";
-        outputtextarea.textContent = data[key];
-        autoResize(outputtextarea);
+    $('#addArticle').click(function() {
+        // Add new article logic
+    });
+});
 
-        const textareaContainer = document.createElement('div');
-        textareaContainer.appendChild(outputtextarea);
-        const containerHtml = textareaContainer.outerHTML;
+// Function to resize textarea based on content
+document.addEventListener('DOMContentLoaded', (event) => {
+    // Assuming you have data at this point, otherwise you'll need to call populateOutputFields
+    // with your data after you've fetched or generated it.
+    // populateOutputFields(retrievedData);
+});
 
-        const keyContainer = document.createElement('div');
-        keyContainer.innerHTML = header;
-        const keyContainerHtml = keyContainer.outerHTML;
+function autoResize(textarea) {
+    // Determine minHeight - larger for 'Text' key
+    const minHeight = textarea.id === 'textarea-Text' ? 300 : 100;
+    textarea.style.height = 'auto'; // Reset height to recalculate
+    textarea.style.height = Math.max(textarea.scrollHeight, minHeight) + 'px'; // Set height to scrollHeight or minHeight
+}
 
-        const newContainer = document.createElement('div');
-        newContainer.style.display = "flex";
-        newContainer.style.justifyContent = "space-between";
-        newContainer.innerHTML = keyContainerHtml + containerHtml;
+function copyToClipboard(elementId) {
+    const textarea = document.getElementById(elementId);
+    textarea.select();
+    document.execCommand('copy');
+}
 
-        $('#result').append(newContainer);
+function populateOutputFields(data) {
+    const keys = ['SEOText', 'SEOTitel', 'Dachzeilen', 'Teaser', 'Titel', 'Text', 'Zusatz'];
+    const resultContainer = document.getElementById('result');
+    resultContainer.innerHTML = ''; // Clear existing content
+    keys.forEach(function(key, index) {
+        const keyValueContainer = document.createElement('div');
+        keyValueContainer.className = "key-value-container py-2 relative";
+        keyValueContainer.style.display = "flex";
+        keyValueContainer.style.justifyContent = "space-between";
+        const headline = document.createElement('h4');
+        headline.textContent = key;
+        headline.className = "text-lg font-bold pt-2";
+        headline.style.cursor = 'pointer';
+        const textarea = document.createElement('textarea');
+        textarea.value = data[key] || '';
+        textarea.style.display = index === 0 ? 'block' : 'none';
+        textarea.className = "form-textarea mt-1 block w-full rounded-md shadow-sm";
+        textarea.style.resize = 'vertical';
+        textarea.style.width = '90%';
+        textarea.style.padding = '0.5rem';
+        textarea.style.boxSizing = 'border-box';
+        textarea.style.backgroundColor = '#4e4e4e';
+        textarea.style.color = '#fbfeff';
+        textarea.setAttribute('id', 'textarea-' + key);
+        const copyButton = document.createElement('button');
+        copyButton.innerHTML = '&#128203;'; // Replace with an icon as needed
+        copyButton.className = "copy-button absolute bottom-2 right-2 text-white font-bold py-2 px-4 rounded";
+        copyButton.style.background = 'transparent';
+        copyButton.style.display = index === 0 ? 'block' : 'none'; // Hide copyButton initially (except for first one). New line.
+        copyButton.style.opacity = '0.7';
+        copyButton.setAttribute('type', 'button');
+        copyButton.setAttribute('onclick', `copyToClipboard('textarea-${key}')`);
+        headline.addEventListener('click', function() {
+            const isTextareaVisible = textarea.style.display !== 'none';
+            textarea.style.display = isTextareaVisible ? 'none' : 'block';
+            copyButton.style.display = isTextareaVisible ? 'none' : 'block';
+            if(!isTextareaVisible && textarea.value !== ''){
+                autoResize(textarea);
+            }
+        });
+        if(textarea.style.display === 'block' && textarea.value !== ''){
+            autoResize(textarea);
+        }
+        headline.addEventListener('mouseover', function() {
+            headline.style.color = '#41efb4';
+        });
+        headline.addEventListener('mouseout', function() {
+            headline.style.color = '';
+        });
+        keyValueContainer.appendChild(headline);
+        keyValueContainer.appendChild(textarea);
+        keyValueContainer.appendChild(copyButton);
+        resultContainer.appendChild(keyValueContainer);
+        textarea.addEventListener('input', function() { autoResize(textarea); });
+
+        if(textarea.value !== '' && index === 0){
+            autoResize(textarea); // Adjust the textarea height initially
+        }
     });
 }
 
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 </body>
 </html>
