@@ -256,7 +256,6 @@ function populateOutputFields(data) {
         keyValueContainer.appendChild(copyButton);
         resultContainer.appendChild(keyValueContainer);
         textarea.addEventListener('input', function() { autoResize(textarea); });
-
         if(textarea.value !== '' && index === 0){
             autoResize(textarea); // Adjust the textarea height initially
         }

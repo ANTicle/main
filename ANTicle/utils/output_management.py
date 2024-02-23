@@ -4,6 +4,8 @@ import os
 import re
 from rapidfuzz import fuzz, process
 from .base_functions import create_dataframe
+from collections import defaultdict
+
 from django.http import JsonResponse
 
 
@@ -124,15 +126,28 @@ def csv_to_json(request):
     :param request: The HTTP request object.
     :return: A JSON response object containing the converted data.
     """
+    data_dict = defaultdict(dict)
     with open('./Output_data/output.csv', 'r') as f:
-        file_content = f.read()
+        reader = csv.reader(f)
+        headers = next(reader, None)  # get headers
+        for row in reader:
+            for header, field in zip(headers, row):
+                if header not in ['Text', 'Zusatz']:
+                    sub_keys = field.split("\n")  # split on linebreak
+                    for idx, key in enumerate(sub_keys):
+                        if len(key) > 20:
+                            data_dict[row[0]]["sub_key_{:02d}".format(idx)] = key  # store if len > 20
+                else:
+                    data_dict[row[0]][header] = field  # normal row if 'Text' or 'Zusatz'
 
-    # Replace two or more consecutive newline characters with a single newline
-    #file_content = re.sub("\n{2,}", "\n", file_content)
+    with open('./Output_data/Fehlende_Details.txt', 'r') as f:
+        details = f.read()
+        data_dict['Zusatz'] = details
 
-    # Now, handle the processed string as a CSV
-    reader = csv.reader(file_content.splitlines())
-    next(reader)
-    data_dict = {rows[0]: rows[1] for rows in reader}
-
+    # remove fields shorter than 20 characters
+    for key in list(data_dict):  # using list to avoid RuntimeError due to size change
+        if len(data_dict[key]) <= 20:
+            del data_dict[key]
+    print(JsonResponse(data_dict))
     return JsonResponse(data_dict)
+
