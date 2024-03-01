@@ -115,10 +115,20 @@ def clear_files():
     open('./temp/output.jsonl', 'w').close()
 
 
-import csv
-from django.http import JsonResponse
-import re
+def add_additional_content():
+    """
+    Read a txt file and add its content to the second column of the CSV file. Write "Zusatz" to the first column.
+    """
+    # read the content of the text file
+    with open('./Output_data/Fehlende_Details.txt', 'r', encoding='utf-8') as txt_file:
+        text_data = txt_file.read()
 
+    # write the content to the CSV file
+    with open('./Output_data/output.csv', 'a', newline='', encoding='utf-8') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        row = ['Zusatz', text_data]
+        csv_writer.writerow(row)
+    print("Content of text file added to CSV file.")
 
 def csv_to_json(request):
     """

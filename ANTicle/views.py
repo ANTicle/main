@@ -8,8 +8,9 @@ from django.utils.decorators import method_decorator
 import os
 import pandas as pd
 import json
+from collections import defaultdict
 import asyncio
-from .utils.output_management import save_generated_data_from_async_req, clear_files, csv_to_json
+from .utils.output_management import save_generated_data_from_async_req, clear_files, csv_to_json, add_additional_content
 from .utils.history_management import check_output_and_history_files
 from .utils.hallucination_check import check_hallucinations
 from .utils.async_requests import process_api_requests_from_file
@@ -98,20 +99,31 @@ class ANT(View):
             async_df = save_generated_data_from_async_req('temp/output.jsonl')  # save async request output
             if not check_hallucinations(input_collection, async_df):
                 break
-
+        add_additional_content()
+        data_dict = defaultdict(dict)
         with open('./Output_data/output.csv', 'r') as f:
-            file_content = f.read()
+            reader = csv.reader(f)
+            headers = next(reader, None)  # get headers
+            for row in reader:
+                for header, field in zip(headers, row):
+                    if header == "Text:":
+                        if 'Text' in data_dict[row[0]]:
+                            data_dict[row[0]]['Text'] += field
+                        else:
+                            data_dict[row[0]]['Text'] = field  # normal row if 'Text'
+                    elif header not in ['Zusatz']:
+                        sub_keys = field.split("\n")  # split on linebreak
+                        for idx, key in enumerate(sub_keys):
+                            if len(key) > 20:
+                                data_dict[row[0]]["sub_key_{:02d}".format(idx)] = key  # store if len > 20
 
 
-        # Replace two or more consecutive newline characters with a single newline
-        # file_content = re.sub("\n{2,}", "\n", file_content)
+        # remove fields shorter than 20 characters from data_dict
+        for key in list(data_dict.keys()):
+            for sub_key in list(data_dict[key].keys()):
+                if len(data_dict[key][sub_key]) <= 20:
+                    del data_dict[key][sub_key]
 
-        # Now, handle the processed string as a CSV
-        reader = csv.reader(file_content.splitlines())
-        next(reader)
-        data_dict = {rows[0]: rows[1] for rows in reader}
-        with open('./Output_data/Fehlende_Details.txt', 'r') as f:
-            details = f.read()
-            data_dict['Zusatz'] = details
+        final_dict = dict(data_dict)  # convert defaultdict back to dict
 
-        return JsonResponse(data_dict)
+        return JsonResponse(final_dict)
