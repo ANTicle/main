@@ -89,6 +89,43 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        #labels-range-input {
+            background-color: #4e4e4e;
+            color: #fbfeff;
+            outline: none;
+        }
+
+        /* Chrome, Safari */
+        #labels-range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 25px;
+            height: 25px;
+            background: #41efb4;
+            cursor: move;
+            border-radius: 50%;
+        }
+
+        /* Firefox */
+        #labels-range-input::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            background: #41efb4;
+            cursor: move;
+            border-radius: 50%;
+        }
+
+        #slider-tooltip {
+            background-color: #41efb4;
+            color: #222222;
+        }
+
+        .absolute {
+            color: #fbfeff;
+        }
+        #slider-container {
+            padding-top: 3%;
+            padding-bottom: 3%;
+        }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
@@ -113,27 +150,31 @@
             </div>
         </div>
         {% endfor %}
+    <div class="relative w-3/4 mb-6 mx-auto">
+    <label for="labels-range-input" class="sr-only">Labels range</label>
+    <input id="labels-range-input" type="range" value="750" min="0" max="5000" step="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+    <div id="slider-tooltip" class="absolute top-0 -mt-8 ml-3 bg-gray-200 rounded-full px-2 py-1 text-xs cursor-default invisible">
+        $750
+    </div>
+    <div class="absolute w-full flex justify-between mt-4 mb-4">
+        <span class="text-sm text-gray-500 dark:text-gray-400">0</span>
+        <span class="text-sm text-gray-500 dark:text-gray-400">500 </span>
+        <span class="text-sm text-gray-500 dark:text-gray-400">1000 </span>
+        <span class="text-sm text-gray-500 dark:text-gray-400">1500 </span>
+        <span class="text-sm text-gray-500 dark:text-gray-400">2000 </span>
+        <span class="text-sm text-gray-500 dark:text-gray-400">2500 </span>
+        <span class="text-sm text-gray-500 dark:text-gray-400">3000 </span>
+        <span class="text-sm text-gray-500 dark:text-gray-400">3500 </span>
+        <span class="text-sm text-gray-500 dark:text-gray-400">4000 </span>
+        <span class="text-sm text-gray-500 dark:text-gray-400">4500 </span>
+        <span class="text-sm text-gray-500 dark:text-gray-400">5000 </span>
+    </div>
+</div>
         <div class="text-center mt-4">
-            <button type="submit" class="custom-btn font-bold py-2 px-4 rounded">Generate</button>
+            <button type="submit" class="custom-btn font-bold py-2 px-4 rounded mt-8 mb-8">Generate</button>
         </div>
     </form>
 </div>
-
-
-<div class="relative w-3/4 mb-6 mx-auto">
-    <label for="labels-range-input" class="sr-only">Labels range</label>
-    <input id="labels-range-input" type="range" value="1000" min="1000" max="5000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
-    <div id="slider-tooltip" class="absolute top-0 -mt-8 ml-3 bg-gray-200 rounded-full px-2 py-1 text-xs cursor-default invisible">
-        $1000
-    </div>
-    <div class="absolute w-full flex justify-between mt-4">
-        <span class="text-sm text-gray-500 dark:text-gray-400">$100</span>
-        <span class="text-sm text-gray-500 dark:text-gray-400">$500</span>
-        <span class="text-sm text-gray-500 dark:text-gray-400">$1000</span>
-        <span class="text-sm text-gray-500 dark:text-gray-400">$1500</span>
-    </div>
-</div>
-
 
 <div id="output" class="mx-auto px-4 sm:px-6 lg:px-8 mt-8 hidden">
     <div class="tabs">
@@ -328,7 +369,7 @@ let tooltip = document.getElementById('slider-tooltip');
 // Event listener for slider
 slider.addEventListener('input', function() {
     // Update tooltip content with slider value
-    tooltip.textContent = '$' + this.value;
+    tooltip.textContent = 'Wörter: ' + parseInt(this.value);
 
     // Calculate position for tooltip and position it
     let valuePercentage = (this.value - this.min) / (this.max - this.min);
