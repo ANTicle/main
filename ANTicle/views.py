@@ -50,10 +50,10 @@ class ANT(View):
     """
     def get(self, request, *args, **kwargs):
         form = InputDataForm()
+        #form.fields['thema'].widget = form.thema(attrs={'style': 'display: block'})
         return render(request, "index.html", {"form": form})
 
     def post(self, request, *args, **kwargs):
-        print('noch ein Test 6')
         """
         :param request: The HTTP request object
         :param args: Optional positional arguments

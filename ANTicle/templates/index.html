@@ -143,18 +143,24 @@
     <form id="inputForm" method="POST">
         {% csrf_token %}
         {% for field in form %}
-        <div class="form-group">
-            <label class="form-label">{{ field.label }}</label>
-            <div class="field-content" style="display: {% if forloop.first %}block{% else %}none{% endif %};">
-                {{ field }}
-            </div>
-        </div>
+            {% if field.name != 'words' %}
+                {% if field.name == 'thema' %}
+                    {% with thema_html=field %}
+                    {% endwith %}
+                {% else %}
+                <div class="form-group">
+                    <label class="form-label">{{ field.label }}</label>
+                    <div class="field-content" style="display: {% if field.name == 'thema' or forloop.first %}block{% else %}none{% endif %};">
+                        {{ field }}
+                    </div>
+                </div>
+                {% endif %}
+            {% endif %}
         {% endfor %}
     <div class="relative w-3/4 mb-6 mx-auto">
     <label for="labels-range-input" class="sr-only">Labels range</label>
     <input id="labels-range-input" type="range" value="750" min="0" max="5000" step="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
     <div id="slider-tooltip" class="absolute top-0 -mt-8 ml-3 bg-gray-200 rounded-full px-2 py-1 text-xs cursor-default invisible">
-        $750
     </div>
     <div class="absolute w-full flex justify-between mt-4 mb-4">
         <span class="text-sm text-gray-500 dark:text-gray-400">0</span>
@@ -170,9 +176,14 @@
         <span class="text-sm text-gray-500 dark:text-gray-400">5000 </span>
     </div>
 </div>
-        <div class="text-center mt-4">
-            <button type="submit" class="custom-btn font-bold py-2 px-4 rounded mt-8 mb-8">Generate</button>
+    <div class="flex justify-center mt-4 mb-8">
+        <div class="form-group mr-4 w-2/3">
+            <label class="form-label">{{ thema_html.label }}</label>
+            <div class="field-content">{{ thema_html }}</div>
         </div>
+        <button id="generate" type="submit" class="custom-btn font-bold py-2 px-4 rounded mt-4 mb-4">Generate</button>
+    </div>
+
     </form>
 </div>
 
@@ -188,6 +199,15 @@
 </div>
 
 <script type="text/javascript">
+window.onload = function(){
+    // Get 'thema' field HTML
+    const themaHtml = `{% for field in thema_html %}{{ field }}{% endfor %}`;
+    // Get the generate button
+    var generateBtn = document.getElementById('generate');
+    // Insert the 'thema' field HTML before the generate button
+    generateBtn.insertAdjacentHTML('beforebegin', themaHtml);
+};
+
 document.addEventListener('DOMContentLoaded', (event) => {
     const formGroups = Array.from(document.querySelectorAll('.form-group'));
     formGroups.forEach((formGroup, i) => {
@@ -379,9 +399,18 @@ slider.addEventListener('input', function() {
     tooltip.classList.remove('invisible');
 });
 
-// Hide tooltip when not dragging
-slider.addEventListener('mouseleave', function() {
-    tooltip.classList.add('invisible');
+// Event listener for slider
+slider.addEventListener('input', function() {
+    // Update tooltip content with slider value
+    tooltip.textContent = 'Wörter: ' + parseInt(this.value);
+    // Calculate position for tooltip and position it
+    let valuePercentage = (this.value - this.min) / (this.max - this.min);
+    tooltip.style.left = `calc(${valuePercentage} * (100% - 1.2em))`;
+    // Display tooltip
+    tooltip.classList.remove('invisible');
+
+    // Update form field 'words' with the slider value
+    document.querySelector(`input[name='words']`).value = this.value;
 });
 
 
