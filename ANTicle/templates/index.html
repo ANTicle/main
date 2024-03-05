@@ -36,6 +36,14 @@
             border-color: #41efb4;
             border-radius: 10px;
         }
+        .form-group textarea_thema {
+            width: 70%;
+            hight: 10%;
+            margin-bottom: 0.5em;
+            background-color: #4e4e4e;
+            border-color: #41efb4;
+            border-radius: 10px;
+        }
         .form-group {
             display: flex;
             justify-content: space-between;
@@ -160,6 +168,7 @@
                 {% endif %}
             {% endif %}
         {% endfor %}
+    {{ form.words }}
     <div class="relative w-3/4 mb-6 mx-auto">
     <label for="labels-range-input" class="sr-only">Labels range</label>
     <input id="labels-range-input" type="range" value="750" min="0" max="5000" step="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
@@ -179,12 +188,12 @@
         <span class="text-sm text-gray-500 dark:text-gray-400">5000 </span>
     </div>
 </div>
-    <div class="flex justify-center mt-4 mb-8">
-        <div class="form-group mr-4 w-2/3">
-            <label class="form-label">{{ thema_html.label }}</label>
-            <div class="field-content">{{ thema_html }}</div>
+    <div class="flex justify-left mt-4 mb-8 h-12">
+        <div class="form-group mr-4 w-2/3 mt-8 mb-4 h-12">
+            <label class="form-label h-12">{{ form.thema.label }}</label>
+            <div class="textarea_thema">{{ form.thema }}</div>
         </div>
-        <button id="generate" type="submit" class="custom-btn font-bold py-2 px-4 rounded mt-4 mb-4">Generate</button>
+        <button id="generate" type="submit" class="custom-btn font-bold py-2 px-4 rounded mt-8 mb-4 h-12">Generate</button>
     </div>
 
     </form>
@@ -244,6 +253,7 @@ function changeTab(tab) {
 
 
 $(document).ready(function() {
+    //Spinner
     $("#inputMenu").click();
     $("#inputForm").on('submit', function(e) {
         e.preventDefault();
@@ -265,11 +275,11 @@ $(document).ready(function() {
                 });
         });
 
-
+        //reset button
     $('#regenerate').click(function() {
         $('#inputForm').submit();
     });
-
+        //ToDo!!!!
     $('#addArticle').click(function() {
         // Add new article logic
     });
@@ -282,6 +292,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // populateOutputFields(retrievedData);
 });
 
+//Textboxen
 function autoResize(textarea) {
     // Reset the height to ensure the scrollHeight calculation is correct
     textarea.style.height = 'auto';
@@ -300,7 +311,7 @@ function autoResize(textarea) {
 
 
 
-
+//Output management
 function populateOutputFields(data) {
     const keys = Object.keys(data); // Dynamically get the keys from the data
     const resultContainer = document.getElementById('result');
@@ -388,19 +399,6 @@ function copyToClipboard(elementId) {
 
 let slider = document.getElementById('labels-range-input');
 let tooltip = document.getElementById('slider-tooltip');
-
-// Event listener for slider
-slider.addEventListener('input', function() {
-    // Update tooltip content with slider value
-    tooltip.textContent = 'Wörter: ' + parseInt(this.value);
-
-    // Calculate position for tooltip and position it
-    let valuePercentage = (this.value - this.min) / (this.max - this.min);
-    tooltip.style.left = `calc(${valuePercentage} * (100% - 1.2em))`;
-
-    // Display tooltip
-    tooltip.classList.remove('invisible');
-});
 
 // Event listener for slider
 slider.addEventListener('input', function() {
