@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .forms import InputDataForm  # Ensure to have correct import path
+from .forms import InputDataForm
 from django.http import HttpResponse, JsonResponse
 from django.views import View
 import csv
@@ -14,7 +14,7 @@ from .utils.output_management import save_generated_data_from_async_req, clear_f
 from .utils.history_management import check_output_and_history_files
 from .utils.hallucination_check import check_hallucinations
 from .utils.async_requests import process_api_requests_from_file
-from .utils.input_management import read_and_concatenate_files, process_data, format_form
+from .utils.input_management import read_and_concatenate_files, process_data, format_form, split_json_string
 from .utils.getting_started import setup_config
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -64,7 +64,16 @@ class ANT(View):
             json.dump(request.POST, outfile, ensure_ascii=False)
         input_data = None
         if request.POST:
-            input_data = format_form('form_data.json')
+            with open('form_data.json') as json_file:
+                json_data = json.load(json_file)
+                if isinstance(json_data, str):
+                    # Convert to a dictionary
+                    try:
+                        json_data = json.loads(json_data)
+                    except json.JSONDecodeError:
+                        print('Error: JSON string could not be parsed into a dictionary.')
+            split_json_string(json_data)
+            input_data = format_form('quelle.json')
             print(input_data)
 
 
