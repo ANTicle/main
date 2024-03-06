@@ -1,6 +1,7 @@
 # ANTicle
 A little tool that carrys a massive weight
 
+[![Demo for ANT testing interface(https://img.youtube.com/vi/zCu6U4SgL2w/0.jpg)](https://www.youtube.com/watch?v=zCu6U4SgL2w)
 
 AI-based tool for the generation of news articles based on reports an social media posts
 Feed the tool with informations and let it generate everything you need to publish it as a news article.
