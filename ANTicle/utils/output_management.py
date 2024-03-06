@@ -1,8 +1,13 @@
 import csv
 import json
 import os
-from fuzzywuzzy import fuzz
+import re
+from rapidfuzz import fuzz, process
 from .base_functions import create_dataframe
+from collections import defaultdict
+
+from django.http import JsonResponse
+
 
 REPLACE_KEYWORDS = ['SEOTitel', 'SEOText', 'Titel', 'Teaser', 'Dachzeilen', 'Text', 'Liste']
 
@@ -77,13 +82,13 @@ def write_responses_to_csv(responses):
 def extract_data_from_response(response):
     """
     Extracts data from the given response.
-
     :param response: The response containing the data.
     :return: A tuple containing the extracted title and generated data.
     """
     title = response[0]["messages"][0]["content"]
     generated_data = extract_generated_data(response)
     for keyword in REPLACE_KEYWORDS:
+        # Using rapidfuzz to measure string similarity
         if any(fuzz.ratio(keyword, word) >= 93 for word in title.split(' ')):
             title = keyword
             break
@@ -108,3 +113,51 @@ def extract_generated_data(response):
 def clear_files():
     open('./Output_data/output.csv', 'w').close()
     open('./temp/output.jsonl', 'w').close()
+
+
+def add_additional_content():
+    """
+    Read a txt file and add its content to the second column of the CSV file. Write "Zusatz" to the first column.
+    """
+    # read the content of the text file
+    with open('./Output_data/Fehlende_Details.txt', 'r', encoding='utf-8') as txt_file:
+        text_data = txt_file.read()
+
+    # write the content to the CSV file
+    with open('./Output_data/output.csv', 'a', newline='', encoding='utf-8') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        row = ['Zusatz', text_data]
+        csv_writer.writerow(row)
+    print("Content of text file added to CSV file.")
+
+def csv_to_json(request):
+    """
+    Convert a CSV file to a JSON response.
+    :param request: The HTTP request object.
+    :return: A JSON response object containing the converted data.
+    """
+    data_dict = defaultdict(dict)
+    with open('./Output_data/output.csv', 'r') as f:
+        reader = csv.reader(f)
+        headers = next(reader, None)  # get headers
+        for row in reader:
+            for header, field in zip(headers, row):
+                if header not in ['Text', 'Zusatz']:
+                    sub_keys = field.split("\n")  # split on linebreak
+                    for idx, key in enumerate(sub_keys):
+                        if len(key) > 20:
+                            data_dict[row[0]]["sub_key_{:02d}".format(idx)] = key  # store if len > 20
+                else:
+                    data_dict[row[0]][header] = field  # normal row if 'Text' or 'Zusatz'
+
+    with open('./Output_data/Fehlende_Details.txt', 'r') as f:
+        details = f.read()
+        data_dict['Zusatz'] = details
+
+    # remove fields shorter than 20 characters
+    for key in list(data_dict):  # using list to avoid RuntimeError due to size change
+        if len(data_dict[key]) <= 20:
+            del data_dict[key]
+    print(JsonResponse(data_dict))
+    return JsonResponse(data_dict)
+
