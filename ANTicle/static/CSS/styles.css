@@ -1,0 +1,128 @@
+ body {
+            background-color: #222222;
+            color: #fbfeff;
+            font-family: 'Red Hat Display', sans-serif;
+        }
+        .btn {
+            width: 50vw;
+            height: 5vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            font-size: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        .form-group textarea {
+            width: 90%;
+            height:auto;
+            padding: 1%;
+            margin-bottom: 0.5em;
+            background-color: #4e4e4e;
+            border-color: #41efb4;
+            border-radius: 10px;
+        }
+        .form-group textarea_thema {
+            width: 70%;
+            height: 10%;
+            margin-bottom: 0.5em;
+            background-color: #4e4e4e;
+            border-color: #41efb4;
+            border-radius: 10px;
+        }
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+        }
+        .form-label {
+            width: 10%;
+            text-align: left;
+            display: inline-block;
+            padding: 5px;
+        }
+        .form-label:hover {
+            color: #41efb4;
+        }
+        .field-content {
+            width: 90%;
+        }
+        .custom-btn {
+            background-color: #41efb4;
+            color: #fbfeff;
+            border: none;
+        }
+        .custom-btn:hover {
+            background-color: #34d399;
+        }
+        .input{
+            margin-top: 50px;
+        }
+        .spinner-background {
+            position: fixed; /* Stay in place */
+            z-index: 999;  /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto;  /* Enable scroll if needed */
+            background-color: rgb(0,0,0);  /* Fallback color */
+            background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+            display: none; /* Hide it by default */
+        }
+
+        .spinner {
+            border: 16px solid #fbfeff; /* Light grey */
+            border-top: 16px solid #34d399; /* Blue */
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #labels-range-input {
+            background-color: #4e4e4e;
+            color: #fbfeff;
+            outline: none;
+        }
+
+        /* Chrome, Safari */
+        #labels-range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 25px;
+            height: 25px;
+            background: #41efb4;
+            cursor: move;
+            border-radius: 50%;
+        }
+
+        /* Firefox */
+        #labels-range-input::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            background: #41efb4;
+            cursor: move;
+            border-radius: 50%;
+        }
+
+        #slider-tooltip {
+            background-color: #41efb4;
+            color: #222222;
+        }
+
+        .absolute {
+            color: #fbfeff;
+        }
+        #slider-container {
+            padding-top: 3%;
+            padding-bottom: 3%;
+        }

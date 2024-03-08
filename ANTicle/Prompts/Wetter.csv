@@ -1,4 +1,3 @@
-Type;Prompt
 SEOTitel; Schreibe fünf passende SEOTitel für einen aktuellen Wetterbericht. Formatiere den Output als "SEO-Titel: 1.SEO-Titel: (hier output einfügen), 2. SEO-Titel: (hier output einfügen),..."
 SEOText; Schreibe drei passende SEOTexte von maximal 250 Zeichen für einen aktuellen Wetterbericht. Formatiere den Output als SEO-Texte: "1.SEO-Text: (hier output einfügen), 2. SEO-Text: (hier output einfügen),..."
 Dachzeile; Schreibe fünf Dachzeilen für einen aktuellen Wetterbericht. Formatiere den Output als "Dachzeilen: 1.Dachzeile: (hier output einfügen), 2.Dachzeile: (hier output einfügen),..."
