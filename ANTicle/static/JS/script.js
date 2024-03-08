@@ -25,16 +25,27 @@ function changeTab(tab) {
     const input = document.getElementById('input');
     const output = document.getElementById('output');
 
-    if (tab === 'input') {
-        input.classList.remove('hidden');
-        output.classList.add('hidden');
-        inputMenu.style.backgroundColor = '#41efb4'; // Selected button color
-        outputMenu.style.backgroundColor = '#292929'; // Non-selected button color
-    } else {
-        output.classList.remove('hidden');
-        input.classList.add('hidden');
-        outputMenu.style.backgroundColor = '#41efb4'; // Selected button color
-        inputMenu.style.backgroundColor = '#292929'; // Non-selected button color
+    if (!inputMenu || !outputMenu || !input || !output) {
+        console.error("One or more elements could not be found.");
+        return;
+    }
+
+    switch (tab) {
+        case 'input':
+            input.classList.remove('hidden');
+            output.classList.add('hidden');
+            inputMenu.style.backgroundColor = '#41efb4'; // Selected button color
+            outputMenu.style.backgroundColor = '#292929'; // Non-selected button color
+            break;
+        case 'output':
+            output.classList.remove('hidden');
+            input.classList.add('hidden');
+            outputMenu.style.backgroundColor = '#41efb4'; // Selected button color
+            inputMenu.style.backgroundColor = '#292929'; // Non-selected button color
+            break;
+        default:
+            console.error(`Unexpected tab value: ${tab}`);
+            break;
     }
 }
 
@@ -178,10 +189,14 @@ function createTextarea(id, value) {
     return { container, textarea };
 }
 
-function copyToClipboard(elementId) {
+async function copyToClipboard(elementId) {
     const textarea = document.getElementById(elementId);
-    textarea.select();
-    document.execCommand('copy');
+    if (!textarea) return;
+    try {
+        await navigator.clipboard.writeText(textarea.value);
+    } catch (err) {
+        console.error('Failed to copy text: ', err);
+    }
 }
 
 let slider = document.getElementById('labels-range-input');
