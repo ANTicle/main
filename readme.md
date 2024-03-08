@@ -22,6 +22,8 @@ ANTicle is licensed under the MIT license. For more information check the LICENS
 - history of generated texts & amount of tokens used
 - checking for AI hallucinations
 - adaptive openAI API key update to avoid hitting errors
+- Web based frontend
+
   
 ### Work in progress
 
@@ -29,9 +31,7 @@ ANTicle is licensed under the MIT license. For more information check the LICENS
 - promots
 
 ### Planned
-
-- Web based frontend
-
+- REST API
 
 ## 🙏 Supported by
 
