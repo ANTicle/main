@@ -1,5 +1,5 @@
 # Pull the official base image
-FROM python:3.9.6-slim-buster
+FROM python:3.10-slim-buster
 
 # Set work directory in the container
 WORKDIR ./main

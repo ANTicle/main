@@ -9,3 +9,4 @@ rapidfuzz~=3.6.1
 django-crispy-forms~=2.1
 crispy~=2020.1rc0
 crispy-bootstrap4~=2023.1
+django-tailwind>=3.8.0
