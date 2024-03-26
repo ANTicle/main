@@ -71,6 +71,16 @@ $(document).ready(function() {
                     $('.spinner-background').css('display', 'none');
                     console.error('Error:', error)
                 });
+                // Add click event listeners to like and dislike buttons
+                $(document).on('click', '.like-btn', function() {
+                    // Like button logic
+                    alert('Like button clicked!');
+                });
+
+                $(document).on('click', '.dislike-btn', function() {
+                    // Dislike button logic
+                    alert('Dislike button clicked!');
+                });
         });
 
         //reset button
@@ -185,6 +195,17 @@ function createTextarea(id, value) {
 
     container.appendChild(textarea);
     container.appendChild(copyButton);
+
+    const likeButton = document.createElement('button');
+    likeButton.textContent = 'Like';
+    likeButton.className = 'like-btn';
+    container.appendChild(likeButton);
+
+    const dislikeButton = document.createElement('button');
+    dislikeButton.textContent = 'Dislike';
+    dislikeButton.className = 'dislike-btn';
+    container.appendChild(dislikeButton);
+
 
     return { container, textarea };
 }
