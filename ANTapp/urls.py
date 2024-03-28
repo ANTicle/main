@@ -21,5 +21,6 @@ from ANTicle.views import ANT
 urlpatterns = [
     path('', ANT.as_view(), name='home'),
     path('admin/', admin.site.urls),
-    path('my-view/', ANT.as_view(), name='my_view')
+    path('my-view/', ANT.as_view(), name='my_view'),
+    path('save-csv/', ANT.as_view(), name='save_csv_data'),
 ]

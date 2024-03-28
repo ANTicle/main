@@ -136,3 +136,16 @@ class ANT(View):
         final_dict = dict(data_dict)  # convert defaultdict back to dict
 
         return JsonResponse(final_dict)
+
+def save_csv_data(request):
+    if request.method == 'POST':
+        headline = request.POST.get('headline')
+        text = request.POST.get('text')
+        reaction = request.POST.get('reaction')
+
+        with open('file.csv', mode='w') as file:
+          writer = csv.writer(file)
+          writer.writerow(['Headline', 'Text', 'Reaction'])
+          writer.writerow([headline, text, reaction])
+
+        return JsonResponse({'status': 'saved'})

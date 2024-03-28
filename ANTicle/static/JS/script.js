@@ -72,24 +72,64 @@ $(document).ready(function() {
                     console.error('Error:', error)
                 });
                 // Add click event listeners to like and dislike buttons
-                $(document).on('click', '.like-btn', function() {
-                    // Like button logic
-                    alert('Like button clicked!');
-                });
-
-                $(document).on('click', '.dislike-btn', function() {
-                    // Dislike button logic
-                    alert('Dislike button clicked!');
-                });
+        $(document).on('click', '.like-btn', function() {
+            // Like button logic
+            alert('Like button clicked!');
+            $(this).data('liked', true);  // Save "like" state
         });
-
-        //reset button
-    $('#regenerate').click(function() {
-        $('#inputForm').submit();
+        $(document).on('click', '.dislike-btn', function() {
+            // Dislike button logic
+            alert('Dislike button clicked!');
+            $(this).data('disliked', true);  // Save "dislike" state
+        });
     });
-        //ToDo!!!!
-    $('#addArticle').click(function() {
-        // Add new article logic
+    //reset button
+    $('#regenerate').click(function() {
+        $('#outputForm').submit();
+        var liked = $(".like-btn").data('liked');
+        var disliked = $(".dislike-btn").data('disliked');
+        var headline = $("header tag selector").text(); // please replace it
+        var text = $("textarea tag selector").val(); // please replace it
+        var reaction = liked ? "Like" : (disliked ? "Dislike" : "None");
+        var formData = new FormData();
+        formData.append('headline', headline);
+        formData.append('text', text);
+        formData.append('reaction', reaction);
+
+        // AJAX post request to save the data
+        fetch('/save-csv/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    });
+    //ToDo!!!!
+    $('#regenerate').click(function() {
+        $('#outputForm').submit();
+        var liked = $(".like-btn").data('liked');
+        var disliked = $(".dislike-btn").data('disliked');
+        var headline = $("header tag selector").text(); // please replace it
+        var text = $("textarea tag selector").val(); // please replace it
+        var reaction = liked ? "Like" : (disliked ? "Dislike" : "None");
+        var formData = new FormData();
+        formData.append('headline', headline);
+        formData.append('text', text);
+        formData.append('reaction', reaction);
+
+        // AJAX post request to save the data
+        fetch('/save-csv/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch((error) => {
+            console.error('Error:', error);
+        });
     });
 });
 
