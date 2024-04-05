@@ -83,31 +83,34 @@ class ANT(View):
         print('config done')
         check_output_and_history_files(output_files, history_files)
 
+        input_collection = None
+
         if input_data:  # check if input_data is not None (if None it means it is not initialised)
             input_collection = input_data
             print(input_collection)
-        requests_filepath, data = process_data(input_collection)
-        first_loop = True
-        while True:
-            if not first_loop:
-                clear_files()
-            first_loop = False
-            asyncio.run(
-                process_api_requests_from_file(
-                    requests_filepath=requests_filepath,
-                    save_filepath='temp/output.jsonl',
-                    request_url="https://api.openai.com/v1/chat/completions",
-                    api_key=os.getenv("OPENAI_API_KEY"),
-                    max_requests_per_minute=int(os.getenv("max_requests_per_minute")),
-                    max_tokens_per_minute=int(os.getenv("max_tokens_per_minute")),
-                    token_encoding_name="cl100k_base",
-                    max_attempts=int(5),
-                    logging_level=int(20),
+        if input_collection is not None:
+            requests_filepath, data = process_data(input_collection)
+            first_loop = True
+            while True:
+                if not first_loop:
+                    clear_files()
+                first_loop = False
+                asyncio.run(
+                    process_api_requests_from_file(
+                        requests_filepath=requests_filepath,
+                        save_filepath='temp/output.jsonl',
+                        request_url="https://api.openai.com/v1/chat/completions",
+                        api_key=os.getenv("OPENAI_API_KEY"),
+                        max_requests_per_minute=int(os.getenv("max_requests_per_minute")),
+                        max_tokens_per_minute=int(os.getenv("max_tokens_per_minute")),
+                        token_encoding_name="cl100k_base",
+                        max_attempts=int(5),
+                        logging_level=int(20),
+                    )
                 )
-            )
-            async_df = save_generated_data_from_async_req('temp/output.jsonl')  # save async request output
-            if not check_hallucinations(input_collection, async_df):
-                break
+                async_df = save_generated_data_from_async_req('temp/output.jsonl')  # save async request output
+                if not check_hallucinations(input_collection, async_df):
+                    break
         add_additional_content()
         data_dict = defaultdict(dict)
         with open('./Output_data/output.csv', 'r') as f:

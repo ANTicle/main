@@ -81,55 +81,37 @@ $(document).ready(function() {
             // Dislike button logic
             alert('Dislike button clicked!');
             $(this).data('disliked', true);  // Save "dislike" state
+
+            // Retrieve headline from the last h4 before this current element
+            let currElement = this;
+            let headlineElement = currElement.previousElementSibling;
+
+            // If the previous element isn't a h4, loop back through the preceding siblings until a h4 is found
+            while (headlineElement && headlineElement.tagName !== 'H4') {
+                headlineElement = headlineElement.previousElementSibling;
+            }
+
+            // Get the related textarea value.
+            let text = $(this).parent().find('textarea').val();
+
+            // Extract the text if a h4 was found
+            let headline = headlineElement ? headlineElement.innerText : null;
+            let reaction = "Dislike";
+            sendToServer(text, reaction, headline);
+
+            // Print statements for testing
+            console.log("Text: ", text);
+            console.log("Reaction: ", reaction);
+            console.log("Headline: ", headline);
         });
     });
     //reset button
     $('#regenerate').click(function() {
-        $('#outputForm').submit();
-        var liked = $(".like-btn").data('liked');
-        var disliked = $(".dislike-btn").data('disliked');
-        var headline = $("header tag selector").text(); // please replace it
-        var text = $("textarea tag selector").val(); // please replace it
-        var reaction = liked ? "Like" : (disliked ? "Dislike" : "None");
-        var formData = new FormData();
-        formData.append('headline', headline);
-        formData.append('text', text);
-        formData.append('reaction', reaction);
 
-        // AJAX post request to save the data
-        fetch('/save-csv/', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => console.log(data))
-        .catch((error) => {
-            console.error('Error:', error);
-        });
     });
     //ToDo!!!!
     $('#regenerate').click(function() {
-        $('#outputForm').submit();
-        var liked = $(".like-btn").data('liked');
-        var disliked = $(".dislike-btn").data('disliked');
-        var headline = $("header tag selector").text(); // please replace it
-        var text = $("textarea tag selector").val(); // please replace it
-        var reaction = liked ? "Like" : (disliked ? "Dislike" : "None");
-        var formData = new FormData();
-        formData.append('headline', headline);
-        formData.append('text', text);
-        formData.append('reaction', reaction);
 
-        // AJAX post request to save the data
-        fetch('/save-csv/', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => console.log(data))
-        .catch((error) => {
-            console.error('Error:', error);
-        });
     });
 });
 
@@ -239,15 +221,36 @@ function createTextarea(id, value) {
     const likeButton = document.createElement('button');
     likeButton.textContent = 'Like';
     likeButton.className = 'like-btn';
+    likeButton.addEventListener('click', function() {
+        let text = textarea.value; // refer the related textarea
+        let reaction = "Like";
+        sendToServer(text, reaction);
+    });
     container.appendChild(likeButton);
 
     const dislikeButton = document.createElement('button');
     dislikeButton.textContent = 'Dislike';
     dislikeButton.className = 'dislike-btn';
+    dislikeButton.addEventListener('click', function() {
+        let text = textarea.value; // refer the related textarea
+        let reaction = "Dislike";
+        sendToServer(text, reaction);
+    });
     container.appendChild(dislikeButton);
 
-
     return { container, textarea };
+}
+
+    function sendToServer(text, reaction) {
+        var formData = new FormData();
+        formData.append('text', text);
+        formData.append('reaction', reaction);
+
+        // AJAX post request to save the data
+        fetch('/save-csv/', {method: 'POST', body: formData})
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch((error) => {console.error('Error:', error);});
 }
 
 async function copyToClipboard(elementId) {
