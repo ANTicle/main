@@ -79,17 +79,26 @@ $(document).ready(function() {
         });
         $(document).on('click', '.dislike-btn', function() {
             // Dislike button logic
-            alert('Dislike button clicked!');
+            //alert('Dislike button clicked!');
             $(this).data('disliked', true);  // Save "dislike" state
 
             // Retrieve headline from the last h4 before this current element
             let currElement = this;
-            let headlineElement = currElement.previousElementSibling;
-
-            // If the previous element isn't a h4, loop back through the preceding siblings until a h4 is found
-            while (headlineElement && headlineElement.tagName !== 'H4') {
-                headlineElement = headlineElement.previousElementSibling;
+            function findSiblingH4(element) {
+                if (!element) {
+                    return null;
+                }
+                let sibling = element.previousElementSibling;
+                while (sibling) {
+                    if (sibling.tagName === 'H4') {
+                        return sibling;
+                    }
+                    sibling = sibling.previousElementSibling;
+                }
+                return findSiblingH4(element.parentNode);
             }
+
+            let headlineElement = findSiblingH4(currElement);
 
             // Get the related textarea value.
             let text = $(this).parent().find('textarea').val();
