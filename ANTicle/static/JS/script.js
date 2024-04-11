@@ -82,25 +82,20 @@ $(document).ready(function() {
             //alert('Dislike button clicked!');
             $(this).data('disliked', true);  // Save "dislike" state
 
-            // Retrieve headline from the last h4 before this current element
             let currElement = this;
-            let headlineElement =event.target.closest('div').querySelector('h4')
-            while (headlineElement && headlineElement.tagName !== 'H4') {
-                headlineElement = headlineElement.previousElementSibling;
-            }
+            // Extract the text if a h4 was found
+            let headline = $(this).parentsUntil('.key-value-container').siblings('.text-lg').text()
+            let reaction = "Dislike";
 
             // Get the related textarea value.
-            let text = $(this).parent().find('textarea').val();
-
-            // Extract the text if a h4 was found
-            let headline = headlineElement ? headlineElement.innerText : null;
-            let reaction = "Dislike";
-            sendToServer(text, reaction, headline);
+            let text = $(this).siblings('.form-textarea').val()
 
             // Print statements for testing
             console.log("Text: ", text);
             console.log("Reaction: ", reaction);
             console.log("Headline: ", headline);
+
+            sendToServer(text, reaction, headline);
         });
     });
     //reset button
@@ -239,10 +234,11 @@ function createTextarea(id, value) {
     return { container, textarea };
 }
 
-    function sendToServer(text, reaction) {
+    function sendToServer(text, reaction, headline) {
         var formData = new FormData();
         formData.append('text', text);
         formData.append('reaction', reaction);
+        formData.append('headline', headline);
 
         // AJAX post request to save the data
         fetch('/save-csv/', {method: 'POST', body: formData})
