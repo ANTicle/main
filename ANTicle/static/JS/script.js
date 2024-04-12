@@ -57,7 +57,7 @@ $(document).ready(function() {
         e.preventDefault();
         $('.spinner-background').css('display', 'block');
             const data = new FormData(this);
-            fetch('my-view/', { method: 'POST', body: data })
+            fetch('/my-view/', { method: 'POST', body: data })
                 .then(response => response.json())
                 .then(function(response) {
                     // Hide spinner
@@ -74,12 +74,25 @@ $(document).ready(function() {
                 // Add click event listeners to like and dislike buttons
         $(document).on('click', '.like-btn', function() {
             // Like button logic
-            alert('Like button clicked!');
             $(this).data('liked', true);  // Save "like" state
+
+            let currElement = this;
+            // Extract the text if a h4 was found
+            let headline = $(this).parentsUntil('.key-value-container').siblings('.text-lg').text()
+            let reaction = "Like";
+
+            // Get the related textarea value.
+            let text = $(this).siblings('.form-textarea').val()
+
+            // Print statements for testing
+            console.log("Text: ", text);
+            console.log("Reaction: ", reaction);
+            console.log("Headline: ", headline);
+
+            sendToServer(text, reaction, headline);
         });
         $(document).on('click', '.dislike-btn', function(event) {
             // Dislike button logic
-            //alert('Dislike button clicked!');
             $(this).data('disliked', true);  // Save "dislike" state
 
             let currElement = this;
@@ -215,9 +228,6 @@ function createTextarea(id, value) {
     likeButton.textContent = 'Like';
     likeButton.className = 'like-btn';
     likeButton.addEventListener('click', function() {
-        let text = textarea.value; // refer the related textarea
-        let reaction = "Like";
-        sendToServer(text, reaction);
     });
     container.appendChild(likeButton);
 
@@ -225,9 +235,6 @@ function createTextarea(id, value) {
     dislikeButton.textContent = 'Dislike';
     dislikeButton.className = 'dislike-btn';
     dislikeButton.addEventListener('click', function() {
-        let text = textarea.value; // refer the related textarea
-        let reaction = "Dislike";
-        sendToServer(text, reaction);
     });
     container.appendChild(dislikeButton);
 

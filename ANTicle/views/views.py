@@ -63,11 +63,11 @@ class ANT(View):
         :param kwargs: Optional keyword arguments
         :return: The HTTP response with output data in JSON format
         """
-        with open('../form_data.json', 'w') as outfile:
+        with open('./form_data.json', 'w') as outfile:
             json.dump(request.POST, outfile, ensure_ascii=False)
         input_data = None
         if request.POST:
-            with open('../form_data.json') as json_file:
+            with open('./form_data.json') as json_file:
                 json_data = json.load(json_file)
                 if isinstance(json_data, str):
                     # Convert to a dictionary
@@ -79,8 +79,8 @@ class ANT(View):
             input_data = format_form('quelle.json')
             print(input_data)
 
-        output_files = ['temp/output.jsonl', 'Output_data/output.csv']
-        history_files = ['Logging_Files/history.jsonl', 'Logging_Files/history.csv']
+        output_files = ['./temp/output.jsonl', './Output_data/output.csv']
+        history_files = ['./Logging_Files/history.jsonl', './Logging_Files/history.csv']
         setup_config()
         print('config done')
         check_output_and_history_files(output_files, history_files)
@@ -100,7 +100,7 @@ class ANT(View):
                 asyncio.run(
                     process_api_requests_from_file(
                         requests_filepath=requests_filepath,
-                        save_filepath='../temp/output.jsonl',
+                        save_filepath='./temp/output.jsonl',
                         request_url="https://api.openai.com/v1/chat/completions",
                         api_key=os.getenv("OPENAI_API_KEY"),
                         max_requests_per_minute=int(os.getenv("max_requests_per_minute")),
@@ -110,12 +110,12 @@ class ANT(View):
                         logging_level=int(20),
                     )
                 )
-                async_df = save_generated_data_from_async_req('../temp/output.jsonl')  # save async request output
+                async_df = save_generated_data_from_async_req('./temp/output.jsonl')  # save async request output
                 if not check_hallucinations(input_collection, async_df):
                     break
         add_additional_content()
         data_dict = defaultdict(dict)
-        with open('../Output_data/output.csv', 'r') as f:
+        with open('./Output_data/output.csv', 'r') as f:
             reader = csv.reader(f)
             headers = next(reader, None)  # get headers
             for row in reader:
@@ -138,22 +138,8 @@ class ANT(View):
                     del data_dict[key][sub_key]
 
         final_dict = dict(data_dict)  # convert defaultdict back to dict
-
+        print('test: ' + json.dumps(final_dict))
         return JsonResponse(final_dict)
 
 
-    def save_csv_data(request):
-        if request.method == 'POST':
-            headline = request.POST.get('headline')
-            print(headline)
-            text = request.POST.get('text')
-            print(text)
-            reaction = request.POST.get('reaction')
-            print(reaction)
 
-            with open('../training.csv', mode='w') as file:
-                writer = csv.writer(file)
-                writer.writerow(['Headline', 'Text', 'Reaction'])
-                writer.writerow([headline, text, reaction])
-
-            return JsonResponse({'status': 'saved'})
