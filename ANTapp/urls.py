@@ -16,10 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from ANTicle.views import ANT
+from ANTicle.views.views import ANT
+from ANTicle.views.TrainingsDataSave import CSVDataSaveView
 
 urlpatterns = [
     path('', ANT.as_view(), name='home'),
     path('admin/', admin.site.urls),
-    path('my-view/', ANT.as_view(), name='my_view')
+    path('my-view/', ANT.as_view(), name='my_view'),
+    path('save-csv/', CSVDataSaveView.as_view(), name='save_csv_data'),
 ]
