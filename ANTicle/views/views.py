@@ -54,8 +54,9 @@ class ANT(View):
     def get(self, request, *args, **kwargs):
         form = InputDataForm()
         # form.fields['thema'].widget = form.thema(attrs={'style': 'display: block'})
-        return render(request, "index.html", {"form": form})
 
+        return render(request, "index.html", {"form": form, "accent_color": "#41efb4"})
+        #To Do: hardcode farbe in variable ändern
     def post(self, request, *args, **kwargs):
         """
         :param request: The HTTP request object

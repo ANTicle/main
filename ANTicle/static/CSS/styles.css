@@ -22,7 +22,7 @@
             padding: 1%;
             margin-bottom: 0.5em;
             background-color: #4e4e4e;
-            border-color: #41efb4;
+            border-color: var(--accent-color);
             border-radius: 10px;
         }
         .form-group textarea_thema {
@@ -30,7 +30,7 @@
             height: 10%;
             margin-bottom: 0.5em;
             background-color: #4e4e4e;
-            border-color: #41efb4;
+            border-color: var(--accent-color);
             border-radius: 10px;
         }
         .form-group {
@@ -44,18 +44,18 @@
             padding: 5px;
         }
         .form-label:hover {
-            color: #41efb4;
+            color: var(--accent-color);
         }
         .field-content {
             width: 90%;
         }
         .custom-btn {
-            background-color: #41efb4;
+            background-color: var(--accent-color);
             color: #fbfeff;
             border: none;
         }
         .custom-btn:hover {
-            background-color: #34d399;
+            background-color: var(--accent-color);
         }
         .input{
             margin-top: 50px;
@@ -75,7 +75,7 @@
 
         .spinner {
             border: 16px solid #fbfeff; /* Light grey */
-            border-top: 16px solid #34d399; /* Blue */
+            border-top: 16px solid var(--accent-color);
             border-radius: 50%;
             width: 120px;
             height: 120px;
@@ -100,7 +100,7 @@
             -webkit-appearance: none;
             width: 25px;
             height: 25px;
-            background: #41efb4;
+            background: var(--accent-color);
             cursor: move;
             border-radius: 50%;
         }
@@ -109,13 +109,13 @@
         #labels-range-input::-moz-range-thumb {
             width: 25px;
             height: 25px;
-            background: #41efb4;
+            background: var(--accent-color);
             cursor: move;
             border-radius: 50%;
         }
 
         #slider-tooltip {
-            background-color: #41efb4;
+            background-color: var(--accent-color);
             color: #222222;
         }
 
