@@ -16,7 +16,7 @@ from ANTicle.utils.history_management import check_output_and_history_files
 from ANTicle.utils.hallucination_check import check_hallucinations
 from ANTicle.utils.async_requests import process_api_requests_from_file
 from ANTicle.utils.input_management import read_and_concatenate_files, process_data, format_form, split_json_string
-from ANTicle.utils.getting_started import setup_config
+from ANTicle.utils.getting_started import setup_config, first_config
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -54,8 +54,8 @@ class ANT(View):
     def get(self, request, *args, **kwargs):
         form = InputDataForm()
         # form.fields['thema'].widget = form.thema(attrs={'style': 'display: block'})
-
-        return render(request, "index.html", {"form": form, "accent_color": "#41efb4"})
+        first_config()
+        return render(request, "index.html", {"form": form, "accent_color": os.getenv('accent_color')})
         #To Do: hardcode farbe in variable ändern
     def post(self, request, *args, **kwargs):
         """
