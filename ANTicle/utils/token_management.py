@@ -42,7 +42,7 @@ def validate_and_swap_api_key(token_sum):
     :return: None
 
     """
-    max_api_usage = int(os.environ.get('Token_Daily_Max'))
+    max_api_usage = int(os.environ.get('Token_Daily_Max', '500000'))
     api_key = os.getenv('OPENAI_API_KEY')  # default value
     usage_ratio = abs(token_sum - max_api_usage) / max_api_usage
     if usage_ratio <= 0.05:
