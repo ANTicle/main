@@ -102,7 +102,7 @@ class ANT(View):
                     process_api_requests_from_file(
                         requests_filepath=requests_filepath,
                         save_filepath='./temp/output.jsonl',
-                        request_url="https://api.openai.com/v1/chat/completions",
+                        request_url=os.getenv('model_url'),
                         api_key=os.getenv("OPENAI_API_KEY"),
                         max_requests_per_minute=int(os.getenv("max_requests_per_minute")),
                         max_tokens_per_minute=int(os.getenv("max_tokens_per_minute")),

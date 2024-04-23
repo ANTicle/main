@@ -43,6 +43,7 @@ def update_environment_variables():
         "max_requests_per_minute": "90000",
         "max_tokens_per_minute": "170000",
         "accent_color": "#41efb4",
+        'model_url': 'https://api.openai.com/v1/chat/completions',
     }
     # Read settings from file
     with open('settings.txt', 'r') as file:

@@ -3,6 +3,9 @@ OPENAI_API_KEY=
 OPENAI_API_KEY_2=
 OPENAI_API_KEY_3=
 
+#specific model
+model_url=
+
 # default if empty 500000
 Token_Daily_Max=
 
