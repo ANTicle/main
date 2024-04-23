@@ -225,14 +225,16 @@ function createTextarea(id, value) {
     container.appendChild(copyButton);
 
     const likeButton = document.createElement('button');
-    likeButton.textContent = 'Like';
+    likeButton.innerHTML = '👍';
+    likeButton.textContent = '👍';
     likeButton.className = 'like-btn';
     likeButton.addEventListener('click', function() {
     });
     container.appendChild(likeButton);
 
     const dislikeButton = document.createElement('button');
-    dislikeButton.textContent = 'Dislike';
+    dislikeButton.innerHTML = '👎';
+    dislikeButton.textContent = '👎';
     dislikeButton.className = 'dislike-btn';
     dislikeButton.addEventListener('click', function() {
     });

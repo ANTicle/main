@@ -3,6 +3,9 @@ OPENAI_API_KEY=
 OPENAI_API_KEY_2=
 OPENAI_API_KEY_3=
 
+#specific model
+model_url=
+
 # default if empty 500000
 Token_Daily_Max=
 
@@ -11,4 +14,7 @@ max_requests_per_minute=
 
 #default if empty 170000
 max_tokens_per_minute=
+
+#accent color
+accent_color=
 

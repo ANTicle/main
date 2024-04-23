@@ -42,6 +42,8 @@ def update_environment_variables():
         "Token_Daily_Max": "500000",
         "max_requests_per_minute": "90000",
         "max_tokens_per_minute": "170000",
+        "accent_color": "#41efb4",
+        'model_url': 'https://api.openai.com/v1/chat/completions',
     }
     # Read settings from file
     with open('settings.txt', 'r') as file:
@@ -112,10 +114,13 @@ def update_install_count():
 
 
 def setup_config():
-    update_install_count()
-    update_environment_variables()
     if os.path.exists('Logging_Files/tokens_log.csv'):
         async_df = pd.read_csv('Logging_Files/tokens_log.csv')
         token_sum = async_df['tokens'].sum()
         print(f"Token sum: {token_sum}")
         validate_and_swap_api_key(token_sum)
+def first_config():
+    update_install_count()
+    update_environment_variables()
+
+
