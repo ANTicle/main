@@ -12,6 +12,9 @@
             margin-top: 20px;
             margin-bottom: 20px;
         }
+        .dislike-btn {
+            margin-left: 1%;
+        }
         .form-group label {
             font-size: 1.5em;
             margin-bottom: 0.5em;
