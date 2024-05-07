@@ -34,13 +34,13 @@ function changeTab(tab) {
         case 'input':
             input.classList.remove('hidden');
             output.classList.add('hidden');
-            inputMenu.style.backgroundColor = '#41efb4'; // Selected button color
+            inputMenu.style.backgroundColor = 'var(--accent-color)'; // Selected button color
             outputMenu.style.backgroundColor = '#292929'; // Non-selected button color
             break;
         case 'output':
             output.classList.remove('hidden');
             input.classList.add('hidden');
-            outputMenu.style.backgroundColor = '#41efb4'; // Selected button color
+            outputMenu.style.backgroundColor = 'var(--accent-color)'; // Selected button color
             inputMenu.style.backgroundColor = '#292929'; // Non-selected button color
             break;
         default:

@@ -16,5 +16,5 @@ max_requests_per_minute=
 max_tokens_per_minute=
 
 #accent color
-accent_color=
+accent_color=e8ab26
 
