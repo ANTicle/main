@@ -14,7 +14,8 @@ A easy to use forenend is in the making.
 ANTicle is licensed under the MIT license. For more information check the LICENSE file for details.
 
 ## Features
-
+Make it yours
+!['images of the interface in different versions'](https://imgur.com/a/SiOotaN)
 ### Working
 
 - recognise text genre
@@ -23,11 +24,12 @@ ANTicle is licensed under the MIT license. For more information check the LICENS
 - checking for AI hallucinations
 - adaptive openAI API key update to avoid hitting errors
 - Web based frontend
+- settings for personaliced setup
+- using variables for article lenght and focus in the prompt
 
   
 ### Work in progress
 
-- adding variables to the prompt
 - promots
 
 ### Planned
