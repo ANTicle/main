@@ -57,7 +57,7 @@ class ANT(View):
         # form.fields['thema'].widget = form.thema(attrs={'style': 'display: block'})
         first_config()
         print(os.getenv('accent_color'))
-        return render(request, "index.html", {"form": form, "accent_color": os.getenv('accent_color')})
+        return render(request, "index.html", {"form": form, "accent_color": '#' + os.getenv('accent_color')})
         #To Do: hardcode farbe in variable ändern
     def post(self, request, *args, **kwargs):
         """
