@@ -1,9 +1,9 @@
-Es gibt folgendes Problem: Der Text erwähnt ein "direktes Ticket für die Olympischen Spiele 2024 in Paris", dies ist jedoch in den Quellen nicht als gesicherte Information vorhanden, sondern nur als Möglichkeit, sollte das deutsche Team im Spiel um Platz drei erfolgreich sein. Quelle_1 besagt: "und das direkte Olympiaticket für Paris." während Quelle_2 anmerkt: "Geht es neben Bronze auch um ein Direktticket für die Olympischen Sommerspiele in Paris." Beides deutet darauf hin, dass das Ticket nicht bereits gesichert ist, sondern noch ausgespielt wird. Der Text liefert eine Schlussfolgerung als Fakt, die in den Quellen als potenzielle Konsequenz eines zukünftigen Spiels beschrieben wird.
+Es gibt folgendes Problem: Der Text behauptet, dass "ab Mittwochmittag ist mit lokalen Gewittern und Graupelschauern zu rechnen" und bezieht sich damit auf die Wetterlage im Ganzen. Quelle_2 spezifiziert jedoch, dass dies "im Süden" der Fall sein wird. Diese räumliche Eingrenzung fehlt im Text und könnte somit zu einer irreführenden Information für die Zuhörer führen, die nicht im Süden wohnen. Außerdem erwähnt der Text einen Übergang zu Ostwind am Abend, während Quelle_2 präzisiert, dass der Wind am "Abend Ostdrehend" sein wird. Dies ist ein kleiner Unterschied in der Darstellung, aber der Text könnte so verstanden werden, als sei der Ostwind bereits am Abend etabliert.
 
 Fehlende Details:
-- Im Text wird die mögliche Auseinandersetzung mit Schweden nicht als unsicher beschrieben, trotz des Protests der Schweden gegen das Halbfinalergebnis gegen Frankreich, wie in Quelle_2 erwähnt.
-- Der Text enthält keine Informationen über Deutschland, das seit 2016 keinen Titel gewonnen hat, was in Quelle_1 genannt wird.
-- Es fehlt die Information, dass Deutschland seit der Heim-WM vor fünf Jahren wieder eine Medaillenchance hat, wie in Quelle_2 beschrieben.
-- Quelle_2 spricht von einem möglichen "magischen Tag", was im Text nicht wiederzufinden ist.
-- Das Detail, dass Kai Häfner aus privaten Gründen kurzfristig abgereist ist, und Timo Kastening wegen eines leichten Infekts im Teamhotel geblieben ist, wird im Text nicht erwähnt.
-- Der Text erwähnt nicht, dass Schweden nach dem Spiel gegen Frankreich Protest eingelegt hat.2024-02-20 14:33:22
+- Der Text erwähnt nicht, dass die Schauer am Mittwochnachmittag nachlassen sollen und die Bewölkung teils auflockern wird, wie es in Quelle_2 beschrieben wird.
+- Der Wind in der Nacht zum Mittwoch dreht laut Quelle_1 auf Süd im Binnenland, dies wird im Text nicht erwähnt.
+- In Quelle_2 wird angegeben, dass die Tiefstwerte in der Nacht zum Donnerstag bei -2 bis 2 Grad im Binnenland und um 3 Grad auf den Inseln liegen werden. Der Text sagt nur "nahe des Gefrierpunkts", was ungenauer ist.
+- Quelle_2 erläutert, dass in der Nacht zum Donnerstag eine niederschlagsfreie Periode erwartet wird, was im Text nicht vorkommt.
+- Quelle_2 spricht von möglichen "flachen Nebelfeldern" ausgangs der Nacht zum Donnerstag, was im Text nicht erwähnt wird.
+- Der Aspekt, dass es nur auf den Nordseeinseln einzelne Schauer in der Nacht zum Donnerstag geben wird, kommt im Text nicht vor.2024-04-23 16:32:43

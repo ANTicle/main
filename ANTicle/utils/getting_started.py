@@ -47,26 +47,29 @@ def update_environment_variables():
     }
     # Read settings from file
     with open('settings.txt', 'r') as file:
-        config_values = file.read()
+        lines = file.readlines()
 
-    config_lines = config_values.split("\n")
-    for line in config_lines:
+    for line in lines:
         line = line.strip()
         if not line or line.startswith("#"):
             continue
-
-        key, config_value = line.split("=")
-        config_value = config_value if config_value else defaults.get(key, None)
-        print(config_value)
-        if config_value is None:
-            print(f"Warning: Ignored the setting {key} due to None value.")
+        try:
+            key, value = line.split("=")
+            value = value.strip()  # strip potential leading/trailing whitespace
+        except ValueError:
+            print(f'Warning: Ignored the invalid line: {line}')
             continue
 
-        if key == "OPENAI_API_KEY" and not config_value and "OPENAI_API_KEY" not in os.environ:
-            raise ValueError("OPENAI_API_KEY is empty and it must be set.")
+        # If the extracted value is empty, we use the default value.
+        if not value:
+            value = defaults.get(key, None)
 
-        if not os.environ.get(key):
-            os.environ[key] = config_value
+        # Proceed only if value is not None
+        if value is not None and not os.environ.get(key):
+            os.environ[key] = value
+
+    # Print out all environment variables for validation.
+    print(os.environ)
 
 def print_environment_variables():
     """
@@ -75,7 +78,9 @@ def print_environment_variables():
     :return: None
     """
     for var, value in os.environ.items():
+        print('This are the environment variables for /n')
         print(f"{var}: {value}")
+        print('end of variables')
 
 def check_install_count():
     """
@@ -114,6 +119,7 @@ def update_install_count():
 
 
 def setup_config():
+    update_environment_variables()
     if os.path.exists('Logging_Files/tokens_log.csv'):
         async_df = pd.read_csv('Logging_Files/tokens_log.csv')
         token_sum = async_df['tokens'].sum()
