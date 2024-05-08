@@ -15,7 +15,8 @@ ANTicle is licensed under the MIT license. For more information check the LICENS
 
 ## Features
 Make it yours
-!['images of the interface in different versions'](https://imgur.com/a/SiOotaN)
+!['images of the interface in different versions'](https://i.imgur.com/xa6K9ri.png)
+[](https://i.imgur.com/UFmLlg4.png)
 ### Working
 
 - recognise text genre
