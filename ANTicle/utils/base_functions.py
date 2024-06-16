@@ -54,7 +54,7 @@ def convert_csv_to_array(input_csv_path, output_python_path):
     return data
 
 
-def create_dataframe(rows, column1, column2):
+def create_dataframe(rows, column1, column2, column3):
     """
     Create a pandas DataFrame from a given list of rows.
 
@@ -62,7 +62,7 @@ def create_dataframe(rows, column1, column2):
     :return: The created pandas DataFrame.
 
     """
-    df = pd.DataFrame(rows, columns=[column1, column2])
+    df = pd.DataFrame(rows, columns=[column1, column2, column3])
     #print(df)
     return df
 

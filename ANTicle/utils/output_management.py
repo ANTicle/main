@@ -2,6 +2,7 @@ import csv
 import json
 import os
 import re
+import datetime
 from rapidfuzz import fuzz, process
 from .base_functions import create_dataframe
 from collections import defaultdict
@@ -37,7 +38,7 @@ def save_generated_data_from_async_req(filename):
     """
     responses = get_responses_from_file(filename)
     data_rows = write_responses_to_csv(responses)
-    df = create_dataframe(data_rows, 'Title', 'Generated Output')
+    df = create_dataframe(data_rows, 'Title', 'Generated Output', 'Time')
     return df
 
 
@@ -72,7 +73,8 @@ def write_responses_to_csv(responses):
 
         for response in responses:
             title, generated_data = extract_data_from_response(response)
-            row = [title, generated_data]
+            time = datetime.datetime.now()
+            row = [title, generated_data, time]
             csv_writer.writerow(row)
             rows.append(row)
     print("CSV file created successfully.")

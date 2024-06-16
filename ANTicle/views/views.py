@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .forms import InputDataForm
+from ANTicle.forms import InputDataForm
 from django.http import HttpResponse, JsonResponse
 from django.views import View
 import csv
@@ -10,12 +10,14 @@ import pandas as pd
 import json
 from collections import defaultdict
 import asyncio
-from .utils.output_management import save_generated_data_from_async_req, clear_files, csv_to_json, add_additional_content
-from .utils.history_management import check_output_and_history_files
-from .utils.hallucination_check import check_hallucinations
-from .utils.async_requests import process_api_requests_from_file
-from .utils.input_management import read_and_concatenate_files, process_data, format_form, split_json_string
-from .utils.getting_started import setup_config
+from ANTicle.utils.output_management import save_generated_data_from_async_req, clear_files, csv_to_json, \
+    add_additional_content
+from ANTicle.utils.history_management import check_output_and_history_files
+from ANTicle.utils.hallucination_check import check_hallucinations
+from ANTicle.utils.async_requests import process_api_requests_from_file
+from ANTicle.utils.input_management import read_and_concatenate_files, process_data, format_form, split_json_string
+from ANTicle.utils.getting_started import setup_config, first_config, update_environment_variables
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ANT(View):
@@ -48,11 +50,15 @@ class ANT(View):
             :param kwargs: Additional keyword arguments
             :return: JSON response with the converted output data
     """
-    def get(self, request, *args, **kwargs):
-        form = InputDataForm()
-        #form.fields['thema'].widget = form.thema(attrs={'style': 'display: block'})
-        return render(request, "index.html", {"form": form})
 
+    def get(self, request, *args, **kwargs):
+        update_environment_variables()
+        form = InputDataForm()
+        # form.fields['thema'].widget = form.thema(attrs={'style': 'display: block'})
+        first_config()
+        print(os.getenv('accent_color'))
+        return render(request, "index.html", {"form": form, "accent_color": '#' + os.getenv('accent_color')})
+        #To Do: hardcode farbe in variable ändern
     def post(self, request, *args, **kwargs):
         """
         :param request: The HTTP request object
@@ -60,11 +66,12 @@ class ANT(View):
         :param kwargs: Optional keyword arguments
         :return: The HTTP response with output data in JSON format
         """
-        with open('form_data.json', 'w') as outfile:
+        update_environment_variables()
+        with open('./form_data.json', 'w') as outfile:
             json.dump(request.POST, outfile, ensure_ascii=False)
         input_data = None
         if request.POST:
-            with open('form_data.json') as json_file:
+            with open('./form_data.json') as json_file:
                 json_data = json.load(json_file)
                 if isinstance(json_data, str):
                     # Convert to a dictionary
@@ -76,38 +83,40 @@ class ANT(View):
             input_data = format_form('quelle.json')
             print(input_data)
 
-
-        output_files = ['temp/output.jsonl', 'Output_data/output.csv']
-        history_files = ['Logging_Files/history.jsonl', 'Logging_Files/history.csv', ]
+        output_files = ['./temp/output.jsonl', './Output_data/output.csv']
+        history_files = ['./Logging_Files/history.jsonl', './Logging_Files/history.csv']
         setup_config()
         print('config done')
         check_output_and_history_files(output_files, history_files)
 
+        input_collection = None
+
         if input_data:  # check if input_data is not None (if None it means it is not initialised)
             input_collection = input_data
             print(input_collection)
-        requests_filepath, data = process_data(input_collection)
-        first_loop = True
-        while True:
-            if not first_loop:
-                clear_files()
-            first_loop = False
-            asyncio.run(
-                process_api_requests_from_file(
-                    requests_filepath=requests_filepath,
-                    save_filepath='temp/output.jsonl',
-                    request_url="https://api.openai.com/v1/chat/completions",
-                    api_key=os.getenv("OPENAI_API_KEY"),
-                    max_requests_per_minute=int(os.getenv("max_requests_per_minute")),
-                    max_tokens_per_minute=int(os.getenv("max_tokens_per_minute")),
-                    token_encoding_name="cl100k_base",
-                    max_attempts=int(5),
-                    logging_level=int(20),
+        if input_collection is not None:
+            requests_filepath, data = process_data(input_collection)
+            first_loop = True
+            while True:
+                if not first_loop:
+                    clear_files()
+                first_loop = False
+                asyncio.run(
+                    process_api_requests_from_file(
+                        requests_filepath=requests_filepath,
+                        save_filepath='./temp/output.jsonl',
+                        request_url=os.getenv('model_url'),
+                        api_key=os.getenv("OPENAI_API_KEY"),
+                        max_requests_per_minute=int(os.getenv("max_requests_per_minute")),
+                        max_tokens_per_minute=int(os.getenv("max_tokens_per_minute")),
+                        token_encoding_name="cl100k_base",
+                        max_attempts=int(5),
+                        logging_level=int(20),
+                    )
                 )
-            )
-            async_df = save_generated_data_from_async_req('temp/output.jsonl')  # save async request output
-            if not check_hallucinations(input_collection, async_df):
-                break
+                async_df = save_generated_data_from_async_req('./temp/output.jsonl')  # save async request output
+                if not check_hallucinations(input_collection, async_df):
+                    break
         add_additional_content()
         data_dict = defaultdict(dict)
         with open('./Output_data/output.csv', 'r') as f:
@@ -126,7 +135,6 @@ class ANT(View):
                             if len(key) > 20:
                                 data_dict[row[0]]["sub_key_{:02d}".format(idx)] = key  # store if len > 20
 
-
         # remove fields shorter than 20 characters from data_dict
         for key in list(data_dict.keys()):
             for sub_key in list(data_dict[key].keys()):
@@ -134,5 +142,8 @@ class ANT(View):
                     del data_dict[key][sub_key]
 
         final_dict = dict(data_dict)  # convert defaultdict back to dict
-
+        print('test: ' + json.dumps(final_dict))
         return JsonResponse(final_dict)
+
+
+

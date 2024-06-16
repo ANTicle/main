@@ -34,13 +34,13 @@ function changeTab(tab) {
         case 'input':
             input.classList.remove('hidden');
             output.classList.add('hidden');
-            inputMenu.style.backgroundColor = '#41efb4'; // Selected button color
+            inputMenu.style.backgroundColor = 'var(--accent-color)'; // Selected button color
             outputMenu.style.backgroundColor = '#292929'; // Non-selected button color
             break;
         case 'output':
             output.classList.remove('hidden');
             input.classList.add('hidden');
-            outputMenu.style.backgroundColor = '#41efb4'; // Selected button color
+            outputMenu.style.backgroundColor = 'var(--accent-color)'; // Selected button color
             inputMenu.style.backgroundColor = '#292929'; // Non-selected button color
             break;
         default:
@@ -57,7 +57,7 @@ $(document).ready(function() {
         e.preventDefault();
         $('.spinner-background').css('display', 'block');
             const data = new FormData(this);
-            fetch('my-view/', { method: 'POST', body: data })
+            fetch('/my-view/', { method: 'POST', body: data })
                 .then(response => response.json())
                 .then(function(response) {
                     // Hide spinner
@@ -71,15 +71,53 @@ $(document).ready(function() {
                     $('.spinner-background').css('display', 'none');
                     console.error('Error:', error)
                 });
-        });
+                // Add click event listeners to like and dislike buttons
+        $(document).on('click', '.like-btn', function() {
+            // Like button logic
+            $(this).data('liked', true);  // Save "like" state
 
-        //reset button
-    $('#regenerate').click(function() {
-        $('#inputForm').submit();
+            let currElement = this;
+            // Extract the text if a h4 was found
+            let headline = $(this).parentsUntil('.key-value-container').siblings('.text-lg').text()
+            let reaction = "Like";
+
+            // Get the related textarea value.
+            let text = $(this).siblings('.form-textarea').val()
+
+            // Print statements for testing
+            console.log("Text: ", text);
+            console.log("Reaction: ", reaction);
+            console.log("Headline: ", headline);
+
+            sendToServer(text, reaction, headline);
+        });
+        $(document).on('click', '.dislike-btn', function(event) {
+            // Dislike button logic
+            $(this).data('disliked', true);  // Save "dislike" state
+
+            let currElement = this;
+            // Extract the text if a h4 was found
+            let headline = $(this).parentsUntil('.key-value-container').siblings('.text-lg').text()
+            let reaction = "Dislike";
+
+            // Get the related textarea value.
+            let text = $(this).siblings('.form-textarea').val()
+
+            // Print statements for testing
+            console.log("Text: ", text);
+            console.log("Reaction: ", reaction);
+            console.log("Headline: ", headline);
+
+            sendToServer(text, reaction, headline);
+        });
     });
-        //ToDo!!!!
-    $('#addArticle').click(function() {
-        // Add new article logic
+    //reset button
+    $('#regenerate').click(function() {
+
+    });
+    //ToDo!!!!
+    $('#regenerate').click(function() {
+
     });
 });
 
@@ -186,7 +224,36 @@ function createTextarea(id, value) {
     container.appendChild(textarea);
     container.appendChild(copyButton);
 
+    const likeButton = document.createElement('button');
+    likeButton.innerHTML = '👍';
+    likeButton.textContent = '👍';
+    likeButton.className = 'like-btn';
+    likeButton.addEventListener('click', function() {
+    });
+    container.appendChild(likeButton);
+
+    const dislikeButton = document.createElement('button');
+    dislikeButton.innerHTML = '👎';
+    dislikeButton.textContent = '👎';
+    dislikeButton.className = 'dislike-btn';
+    dislikeButton.addEventListener('click', function() {
+    });
+    container.appendChild(dislikeButton);
+
     return { container, textarea };
+}
+
+    function sendToServer(text, reaction, headline) {
+        var formData = new FormData();
+        formData.append('text', text);
+        formData.append('reaction', reaction);
+        formData.append('headline', headline);
+
+        // AJAX post request to save the data
+        fetch('/save-csv/', {method: 'POST', body: formData})
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch((error) => {console.error('Error:', error);});
 }
 
 async function copyToClipboard(elementId) {
